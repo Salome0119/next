@@ -1,0 +1,47 @@
+import { auth } from '@/auth';
+import { NextResponse } from 'next/server';
+import sql from '@/lib/db';
+
+export default auth(async (req) => {
+  const isLoggedIn = !!req.auth;
+  const isOnLogin = req.nextUrl.pathname === '/';
+  const isApiAuth = req.nextUrl.pathname.startsWith('/api/auth');
+  const isInvite = req.nextUrl.pathname.startsWith('/invite');
+  const isOnDashboardWorkspace = req.nextUrl.pathname.startsWith('/dashboard/workspace/');
+
+  if (isOnLogin || isApiAuth || isInvite) {
+    return NextResponse.next();
+  }
+
+  if (!isLoggedIn) {
+    return NextResponse.redirect(new URL('/', req.nextUrl));
+  }
+
+  // Check workspace membership for dashboard/workspace routes
+  if (isOnDashboardWorkspace && isLoggedIn) {
+    const userId = Number(req.auth?.user?.id);
+    const workspaceIdMatch = req.nextUrl.pathname.match(/\/dashboard\/workspace\/(\d+)/);
+    
+    if (workspaceIdMatch) {
+      const workspaceId = Number(workspaceIdMatch[1]);
+      
+      const membership = await sql`
+        SELECT 1 FROM workspace_members 
+        WHERE workspace_id = ${workspaceId} AND user_id = ${userId}
+      `;
+      
+      if (membership.length === 0) {
+        // Not a member, redirect to dashboard
+        return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
+      }
+    }
+  }
+
+  return NextResponse.next();
+});
+
+export const config = {
+  matcher: [
+    '/((?!api/auth|_next/static|_next/image|favicon.ico|.*\\.png$|invite|api/invite).*)',
+  ],
+};
