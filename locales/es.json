@@ -1,0 +1,357 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "aiGenerator": "Generador IA",
+    "workspace": "Workspace",
+    "tasks": "Tareas",
+    "team": "Equipo",
+    "settings": "Ajustes",
+    "inviteMember": "Invitar miembro",
+    "accountSettings": "Ajustes de Cuenta",
+    "restartTour": "Revisar Tutorial",
+    "logout": "Cerrar sesión"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Resumen de tu actividad",
+    "quickTask": "Nueva tarea rápida",
+    "addTask": "Agregar",
+    "adding": "Agregando...",
+    "placeholder": "Escribe una tarea y presiona Enter...",
+    "priority": {
+      "high": "🔴 Alta",
+      "medium": "🟡 Media",
+      "low": "🟢 Baja"
+    },
+    "workspaceTasks": "Tareas del Workspace",
+    "collaborate": "Colabora con tu equipo en tiempo real",
+    "pending": "pendientes",
+    "completed": "completadas",
+    "total": "total",
+    "noTasks": "No hay tareas aún",
+    "noTasksDesc": "Crea tu primera tarea arriba o usa la IA para generar tareas automáticamente",
+    "createFirstTask": "Crear primera tarea",
+    "edit": "Editar",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar tarea",
+    "assign": "Asignar",
+    "unassigned": "Sin asignar",
+    "created": "Creada",
+    "priorityLabel": "Prioridad",
+    "summary": "Resumen del día",
+    "quickAccess": "Acceso rápido",
+    "aiGeneratorDesc": "Crea tareas automáticamente",
+    "taskList": "Lista de tareas",
+    "details": "Detalles de",
+    "markPending": "Marcar como pendiente",
+    "markCompleted": "Marcar como completada",
+    "taskTitle": "Título de la tarea"
+  },
+  "settings": {
+    "title": "Ajustes de Cuenta",
+    "subtitle": "Gestiona tu perfil, seguridad, preferencias y datos",
+    "tabs": {
+      "profile": "Perfil",
+      "security": "Seguridad",
+      "preferences": "Preferencias",
+      "aiUsage": "Uso de IA",
+      "account": "Cuenta"
+    },
+    "security": {
+      "title": "Seguridad",
+      "subtitle": "Gestiona tu contraseña y métodos de autenticación",
+      "currentPassword": "Contraseña actual",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirmar nueva contraseña",
+      "changePassword": "Cambiar contraseña",
+      "passwordChanged": "Contraseña cambiada correctamente",
+      "passwordError": "Error al cambiar la contraseña",
+      "twoFactorTitle": "Autenticación de dos factores (2FA)",
+      "twoFactorDesc": "Añade una capa extra de seguridad a tu cuenta",
+      "enable2FA": "Activar 2FA",
+      "disable2FA": "Desactivar 2FA",
+      "backupCodes": "Códigos de respaldo",
+      "downloadCodes": "Descargar códigos",
+      "saving": "Guardando..."
+    },
+    "aiUsage": {
+      "title": "Uso de IA",
+      "subtitle": "Monitoriza tu consumo de créditos de IA",
+      "monthlyUsage": "Uso mensual",
+      "creditsUsed": "Créditos utilizados",
+      "creditsRemaining": "Créditos restantes",
+      "resetDate": "Fecha de reinicio",
+      "usageHistory": "Historial de uso",
+      "noUsage": "No hay uso registrado este mes"
+    },
+    "account": {
+      "title": "Cuenta",
+      "subtitle": "Gestiona tu cuenta y datos personales",
+      "deleteAccount": "Eliminar cuenta",
+      "deleteWarning": "Esta acción es irreversible. Se eliminarán todos tus datos permanentemente.",
+      "confirmDelete": "Escribe \"ELIMINAR\" para confirmar",
+      "deleteButton": "Eliminar mi cuenta",
+      "exportData": "Exportar mis datos",
+      "exportDesc": "Descarga una copia de todos tus datos en formato JSON"
+    },
+    "profile": {
+      "title": "Perfil de Usuario",
+      "subtitle": "Gestiona tu información personal y avatar",
+      "fullName": "Nombre completo",
+      "email": "Correo electrónico",
+      "verified": "Verificado",
+      "emailNotChangeable": "El correo no se puede cambiar desde aquí",
+      "role": "Rol / Profesión",
+      "roleHelp": "Ayuda a la IA a personalizar respuestas para tu rol",
+      "selectRole": "Selecciona tu profesión",
+      "saveChanges": "Guardar cambios",
+      "saving": "Guardando...",
+      "avatar": "Foto de perfil",
+      "avatarHelp": "JPG, PNG, WebP o GIF. Máximo 2MB.",
+      "uploading": "Subiendo...",
+      "removeAvatar": "Eliminar avatar",
+      "profileUpdated": "Perfil actualizado correctamente",
+      "avatarUpdated": "Avatar actualizado correctamente",
+      "avatarRemoved": "Avatar eliminado",
+      "professions": {
+        "desarrollador": "Desarrollador",
+        "disenador": "Diseñador",
+        "project-manager": "Project Manager",
+        "estudiante": "Estudiante",
+        "otro": "Otro"
+      }
+    },
+    "preferences": {
+      "title": "Preferencias Globales",
+      "subtitle": "Personaliza la apariencia, idioma y notificaciones",
+      "theme": {
+        "title": "Tema Visual",
+        "dark": "Modo Oscuro",
+        "darkDesc": "Fondo oscuro siempre",
+        "light": "Modo Claro",
+        "lightDesc": "Fondo claro siempre",
+        "system": "Sistema",
+        "systemDesc": "Sigue la configuración del SO"
+      },
+      "language": {
+        "title": "Idioma de la Interfaz",
+        "spanish": "Español",
+        "english": "English"
+      },
+      "creativity": {
+        "title": "Nivel de Creatividad de IA",
+        "subtitle": "Afecta cómo la IA genera contenido en el Generador de Texto",
+        "precise": "Preciso",
+        "preciseDesc": "Respuestas exactas y directas",
+        "balanced": "Balanceado",
+        "balancedDesc": "Equilibrio entre precisión y creatividad",
+        "creative": "Creativo",
+        "creativeDesc": "Respuestas más imaginativas"
+      },
+      "notifications": {
+        "title": "Notificaciones por Correo",
+        "email": "Activar notificaciones por correo",
+        "emailDesc": "Recibir correos de la plataforma",
+        "weekly": "Resumen semanal de proyectos",
+        "weeklyDesc": "Recibe un resumen cada semana",
+        "taskAlerts": "Alertas de límites de tareas",
+        "taskAlertsDesc": "Avisos cuando te acercas a límites"
+      },
+      "savePreferences": "Guardar Preferencias",
+      "saving": "Guardando...",
+      "saved": "Preferencias guardadas correctamente"
+    }
+  },
+  "workspace": {
+    "team": "Equipo",
+    "manageMembers": "Gestiona los miembros del workspace",
+    "yourRole": "Tu rol",
+    "inviteMember": "+ Invitar miembro",
+    "inviteFirstMember": "Invitar primer miembro",
+    "noMembers": "No hay miembros en el equipo",
+    "noMembersDesc": "Invita a tus compañeros para empezar a colaborar",
+    "pending": "Pendiente",
+    "expires": "Expira",
+    "invitedBy": "Invitado por",
+    "roles": {
+      "owner": "Propietario",
+      "admin": "Administrador",
+      "member": "Miembro"
+    },
+    "settings": {
+      "title": "Ajustes del Workspace",
+      "subtitle": "Gestiona miembros, invitaciones y configuración",
+      "invitations": "Invitaciones",
+      "inviteMember": "Invitar miembro",
+      "noInvitations": "No hay invitaciones pendientes",
+      "status": {
+        "pending": "pendiente",
+        "accepted": "aceptada",
+        "revoked": "revocada",
+        "expired": "expirada"
+      },
+      "copyLink": "Copiar enlace",
+      "revoke": "Revocar",
+      "members": "Miembros",
+      "noMembers": "No hay miembros",
+      "role": "Rol",
+      "remove": "Remover miembro",
+      "dangerZone": "Zona de peligro",
+      "dangerDesc": "Eliminar el workspace eliminará todas las tareas, miembros e invitaciones permanentemente.",
+      "deleteWorkspace": "Eliminar workspace",
+      "noPermission": "No tienes permisos para gestionar este workspace. Contacta al propietario o administrador."
+    }
+  },
+  "auth": {
+    "login": "Iniciar sesión",
+    "register": "Registrarse",
+    "email": "Correo electrónico",
+    "password": "Contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "noAccount": "¿No tienes cuenta?",
+    "hasAccount": "¿Ya tienes cuenta?"
+  },
+  "common": {
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "close": "Cerrar",
+    "confirm": "Confirmar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "previous": "Anterior",
+    "today": "Hoy",
+    "now": "ahora mismo",
+    "min": " min",
+    "h": "h",
+    "d": "d",
+    "required": "El título es requerido",
+    "maxChars": "Máximo 100 caracteres",
+    "saving": "Guardando...",
+    "saveError": "Error al guardar"
+  },
+  "generator": {
+    "header": {
+      "title": "Automatización con IA",
+      "subtitle": "Genera contenido con IA y guárdalo como tarea en tu workspace"
+    },
+    "smartPasteTab": "Smart Paste",
+    "dailyPlannerTab": "Planificador Diario",
+    "customQATab": "💬 Pregunta Personalizada",
+    "dropzone": {
+      "hint": "Arrastra un archivo PDF o Word aquí",
+      "clickHint": "o haz clic para seleccionar (máx. 10 MB)"
+    },
+    "extractButton": "⚡ Extraer Tareas con IA",
+    "generatePlanButton": "⚡ Generar Cronograma Inteligente",
+    "docQAButton": "Enviar consulta",
+    "saveButton": "Guardar",
+    "saveAllButton": "📌 Guardar Todas las Tareas",
+    "createTaskButton": "📌 Crear Tarea en Workspace",
+    "resultHeader": "Respuesta de la IA",
+    "resultSubtitle": "Contenido generado y estructurado con éxito",
+    "placeholder": "Esperando tu prompt. Escribe algo arriba o usa Smart Paste para ver la magia.",
+    "priority": {
+      "high": "Alta",
+      "medium": "Media",
+      "low": "Baja"
+    },
+    "workspace": {
+      "personal": "Dashboard Principal (Personal)",
+      "select": "Workspace destino",
+      "loading": "Cargando...",
+      "none": "Sin workspaces"
+    },
+    "toast": {
+      "saved": "¡Tarea \"{title}\" guardada exitosamente!",
+      "savedAll": "¡{count} tareas guardadas exitosamente!",
+      "error": "Error al guardar la tarea \"{title}\"",
+      "errorAll": "No se pudieron guardar las tareas en la base de datos."
+    },
+    "presetPrompts": {
+      "extractTasks": "📋 Extraer Tareas",
+      "execSummary": "📝 Resumen Ejecutivo",
+      "createSchedule": "📅 Crear Cronograma",
+      "formatSmartPaste": "⚡ Formatear con SmartPaste"
+    },
+    "actions": {
+      "generate": "Generar con IA",
+      "generating": "Generando respuesta...",
+      "edit": "✏️ Editar",
+      "saveEdit": "💾 Guardar",
+      "cancelEdit": "Cancelar",
+      "copy": "📋 Copiar",
+      "copied": "¡Copiado!",
+      "pdf": "📥 PDF",
+      "word": "📄 Word"
+    },
+    "error": {
+      "generic": "Ocurrió un error al generar el texto. Verifica tu API Key.",
+      "workspaceRequired": "Selecciona un workspace para guardar la tarea",
+      "fileError": "Error al procesar el documento",
+      "fileMaxSize": "Máximo 10 MB"
+    },
+    "prompt": {
+      "label": "¿Qué quieres que genere la IA?",
+      "placeholder": "Escribe lo que quieres que genere la IA (ej. Escribe un resumen de tareas para el equipo)...",
+      "charCount": "{count} caracteres restantes"
+    },
+    "smartPaste": {
+      "inputPlaceholder": "Pega un correo, acta de reunión, chat o notas...\n\nEj: Juan, revisa el informe antes del viernes. María, agenda reunión con cliente martes 10:00.",
+      "hint": "La IA extraerá tareas con título, descripción y prioridad. También puedes subir PDF o Word.",
+      "docQAPlaceholder": "Ej: ¿Cuáles son las entregas principales de este documento?\nResume los puntos clave.",
+      "docQAHint": "La IA responderá basándose exclusivamente en el contenido del documento subido.",
+      "noTasksFound": "No se encontraron tareas en el texto.",
+      "noActivitiesGenerated": "No se generaron actividades.",
+      "unknownError": "Error desconocido",
+      "inputLabel": "Texto para extraer tareas",
+      "fileUploadAriaLabel": "Subir documento PDF o Word para Smart Paste",
+      "characters": "caracteres",
+      "copyAriaLabel": "Copiar respuesta al portapapeles"
+    },
+    "dailyPlanner": {
+      "inputPlaceholder": "Ej: Trabajo profundo en la API por la mañana, reunión de equipo a las 2 PM y revisión de código antes de finalizar el día.",
+      "startTimeLabel": "Hora inicio",
+      "hint": "La IA creará tareas en bloques horarios secuenciales a partir de esta hora"
+    },
+    "docQA": {
+      "copyAriaLabel": "Copiar respuesta al portapapeles"
+    },
+    "fileUpload": {
+      "processing": "Procesando documento...",
+      "ready": "Documento listo para consultar",
+      "viewText": "Ver texto",
+      "remove": "Quitar",
+      "contextActive": "Contexto activo:",
+      "errorUnexpected": "Ocurrió un error inesperado al procesar el archivo"
+    },
+    "pdf": {
+      "instruction": "Instrucción:"
+    },
+    "word": {
+      "instruction": "Instrucción:"
+    },
+    "history": {
+      "title": "Historial de generaciones",
+      "count": "({count})",
+      "empty": "No hay generaciones previas",
+      "emptyDesc": "Tus últimas 5 generaciones aparecerán aquí",
+      "load": "Cargar",
+      "clearAll": "Limpiar todo",
+      "viewAll": "Ver todo el historial ({count})",
+      "ariaLabel": "Prompts rápidos predefinidos",
+      "viewTextAriaLabel": "Ver texto extraído del documento",
+      "editPlaceholder": "Escribe tu respuesta aquí...",
+      "loadAriaLabel": "Cargar esta generación"
+    }
+  },
+  "aiTools": {
+    "title": "Herramientas de IA",
+    "subtitle": "Extrae tareas o planifica tu día automáticamente"
+  }
+}

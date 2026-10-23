@@ -1,6 +1,7 @@
 allowBuilds:
   '@google/genai': true
   '@google/genai protobufjs': true
+  core-js@3.50.0: true
   protobufjs: true
   sharp: false
   unrs-resolver: false

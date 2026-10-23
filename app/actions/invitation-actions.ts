@@ -3,6 +3,16 @@
 import sql from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
+import {
+  inviteMemberSchema,
+  acceptInvitationSchema,
+  revokeInvitationSchema,
+  formatZodError,
+  createActionError,
+  createActionSuccess,
+  createValidationErrorResult,
+  type ActionResult,
+} from '@/lib/validations';
 
 function generateToken(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
@@ -26,43 +36,52 @@ async function getUserRoleInWorkspace(workspaceId: number, userId: number): Prom
   return (result[0]?.role as 'owner' | 'admin' | 'member') || null;
 }
 
-export async function createInvitation(workspaceId: number, email: string, role: 'admin' | 'member' = 'member') {
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('No autenticado');
-
-  const role_ = await getUserRoleInWorkspace(workspaceId, userId);
-  if (role_ !== 'owner' && role_ !== 'admin') throw new Error('Sin permisos');
-
-  // Admins can only invite members, not other admins
-  if (role_ === 'admin' && role === 'admin') throw new Error('Solo el owner puede invitar administradores');
-
-  const existingInvitation = await sql`
-    SELECT * FROM invitations 
-    WHERE workspace_id = ${workspaceId} AND email = ${email.toLowerCase()} AND status = 'pending'
-  `;
-  if (existingInvitation.length > 0) {
-    throw new Error('Ya existe una invitación pendiente para este email');
+export async function createInvitation(workspaceId: number, email: string, role: 'admin' | 'member' = 'member'): Promise<ActionResult<{ token: string; invitation: unknown; inviteUrl: string }>> {
+  const validation = inviteMemberSchema.safeParse({ workspaceId, email, role });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
   }
 
-  const existingMember = await sql`
-    SELECT * FROM workspace_members 
-    WHERE workspace_id = ${workspaceId} AND user_id IN (SELECT id FROM users WHERE email = ${email.toLowerCase()})
-  `;
-  if (existingMember.length > 0) {
-    throw new Error('Este usuario ya es miembro del workspace');
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return createActionError<{ token: string; invitation: unknown; inviteUrl: string }>('No autenticado');
+
+    const role_ = await getUserRoleInWorkspace(validation.data.workspaceId, userId);
+    if (role_ !== 'owner' && role_ !== 'admin') return createActionError<{ token: string; invitation: unknown; inviteUrl: string }>('No tienes permisos para invitar miembros');
+
+    if (role_ === 'admin' && validation.data.role === 'admin') return createActionError<{ token: string; invitation: unknown; inviteUrl: string }>('Solo el propietario puede invitar administradores');
+
+    const existingInvitation = await sql`
+      SELECT * FROM invitations 
+      WHERE workspace_id = ${validation.data.workspaceId} AND email = ${validation.data.email.toLowerCase()} AND status = 'pending'
+    `;
+    if (existingInvitation.length > 0) {
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string }>('Ya existe una invitación pendiente para este correo electrónico');
+    }
+
+    const existingMember = await sql`
+      SELECT * FROM workspace_members 
+      WHERE workspace_id = ${validation.data.workspaceId} AND user_id IN (SELECT id FROM users WHERE email = ${validation.data.email.toLowerCase()})
+    `;
+    if (existingMember.length > 0) {
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string }>('Este usuario ya es miembro del workspace');
+    }
+
+    const token = generateToken();
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    const invitations = await sql`
+      INSERT INTO invitations (workspace_id, email, role, token, invited_by, expires_at)
+      VALUES (${validation.data.workspaceId}, ${validation.data.email.toLowerCase()}, ${validation.data.role}, ${token}, ${userId}, ${expiresAt})
+      RETURNING *
+    `;
+
+    revalidatePath(`/dashboard/workspace/${validation.data.workspaceId}`);
+    return createActionSuccess({ token, invitation: invitations[0], inviteUrl: `/invite/${token}` });
+  } catch (error) {
+    console.error('[CREATE INVITATION ERROR]', error);
+    return createActionError<{ token: string; invitation: unknown; inviteUrl: string }>('Error al crear la invitación. Inténtalo de nuevo.');
   }
-
-  const token = generateToken();
-  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
-
-  const invitations = await sql`
-    INSERT INTO invitations (workspace_id, email, role, token, invited_by, expires_at)
-    VALUES (${workspaceId}, ${email.toLowerCase()}, ${role}, ${token}, ${userId}, ${expiresAt})
-    RETURNING *
-  `;
-
-  revalidatePath(`/dashboard/workspace/${workspaceId}`);
-  return { token, invitation: invitations[0], inviteUrl: `/invite/${token}` };
 }
 
 export async function getInvitations(workspaceId: number) {
@@ -96,59 +115,92 @@ export async function getInvitations(workspaceId: number) {
   }));
 }
 
-export async function revokeInvitation(invitationId: number) {
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('No autenticado');
+export async function revokeInvitation(invitationId: number): Promise<ActionResult> {
+  const validation = revokeInvitationSchema.safeParse({ invitationId });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
+  }
 
-  const invitation = await sql`
-    SELECT * FROM invitations WHERE id = ${invitationId}
-  `;
-  if (invitation.length === 0) throw new Error('Invitación no encontrada');
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return createActionError<void>('No autenticado');
 
-  const role = await getUserRoleInWorkspace(invitation[0].workspace_id, userId);
-  if (role !== 'owner' && role !== 'admin') throw new Error('Sin permisos');
+    const invitation = await sql`
+      SELECT * FROM invitations WHERE id = ${validation.data.invitationId}
+    `;
+    if (invitation.length === 0) return createActionError<void>('Invitación no encontrada');
 
-  await sql`
-    UPDATE invitations SET status = 'revoked' WHERE id = ${invitationId}
-  `;
+    const role = await getUserRoleInWorkspace(invitation[0].workspace_id, userId);
+    if (role !== 'owner' && role !== 'admin') return createActionError<void>('No tienes permisos para revocar invitaciones');
 
-  revalidatePath(`/dashboard/workspace/${invitation[0].workspace_id}`);
-  return { success: true };
+    await sql`
+      UPDATE invitations SET status = 'revoked' WHERE id = ${validation.data.invitationId}
+    `;
+
+    revalidatePath(`/dashboard/workspace/${invitation[0].workspace_id}`);
+    return createActionSuccess(undefined);
+  } catch (error) {
+    console.error('[REVOKE INVITATION ERROR]', error);
+    return createActionError<void>('Error al revocar la invitación. Inténtalo de nuevo.');
+  }
 }
 
-export async function acceptInvitation(token: string) {
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('Debes iniciar sesión para aceptar la invitación');
-
-  const invitation = await sql`
-    SELECT * FROM invitations WHERE token = ${token}
-  `;
-  if (invitation.length === 0) throw new Error('Invitación no encontrada');
-
-  const inv = invitation[0];
-  if (inv.status !== 'pending') throw new Error(`Invitación ${inv.status}`);
-  if (new Date(inv.expires_at) < new Date()) {
-    await sql`UPDATE invitations SET status = 'expired' WHERE id = ${inv.id}`;
-    throw new Error('Invitación expirada');
+export async function acceptInvitation(token: string, options?: { acceptAnyway?: boolean }): Promise<ActionResult<{ workspaceId: number; emailMismatch?: { invitedEmail: string; currentEmail: string } }>> {
+  const validation = acceptInvitationSchema.safeParse({ token });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
   }
 
-  const user = await sql`SELECT email FROM users WHERE id = ${userId}`;
-  if (user.length === 0 || user[0].email.toLowerCase() !== inv.email.toLowerCase()) {
-    throw new Error('Esta invitación es para otro email');
+  try {
+    const userId = await getCurrentUserId();
+    if (!userId) return createActionError<{ workspaceId: number }>('Debes iniciar sesión para aceptar la invitación');
+
+    const invitation = await sql`
+      SELECT * FROM invitations WHERE token = ${validation.data.token}
+    `;
+    if (invitation.length === 0) return createActionError<{ workspaceId: number }>('Invitación no encontrada');
+
+    const inv = invitation[0];
+    if (inv.status !== 'pending') return createActionError<{ workspaceId: number }>(`Esta invitación ya fue ${inv.status}`);
+    if (new Date(inv.expires_at) < new Date()) {
+      await sql`UPDATE invitations SET status = 'expired' WHERE id = ${inv.id}`;
+      return createActionError<{ workspaceId: number }>('La invitación ha expirado');
+    }
+
+    const user = await sql`SELECT email FROM users WHERE id = ${userId}`;
+    const currentEmail = user[0]?.email?.toLowerCase() || '';
+    const invitedEmail = inv.email?.toLowerCase() || '';
+
+    // Si la invitación tiene email específico y no coincide con el usuario actual
+    if (invitedEmail && currentEmail !== invitedEmail && !options?.acceptAnyway) {
+      return {
+        success: false,
+        error: 'Email mismatch',
+        data: {
+          workspaceId: 0,
+          emailMismatch: { invitedEmail, currentEmail },
+        } as { workspaceId: number; emailMismatch: { invitedEmail: string; currentEmail: string } },
+      };
+    }
+
+    // Si es invitación genérica (sin email) o coincide el email o acceptAnyway=true
+    await sql`
+      INSERT INTO workspace_members (workspace_id, user_id, role)
+      VALUES (${inv.workspace_id}, ${userId}, ${inv.role})
+      ON CONFLICT (workspace_id, user_id) DO UPDATE SET role = ${inv.role}
+    `;
+
+    await sql`
+      UPDATE invitations SET status = 'accepted', accepted_at = CURRENT_TIMESTAMP WHERE id = ${inv.id}
+    `;
+
+    revalidatePath(`/dashboard/workspace/${inv.workspace_id}`);
+    revalidatePath('/dashboard');
+    return createActionSuccess({ workspaceId: inv.workspace_id });
+  } catch (error) {
+    console.error('[ACCEPT INVITATION ERROR]', error);
+    return createActionError<{ workspaceId: number }>('Error al aceptar la invitación. Inténtalo de nuevo.');
   }
-
-  await sql`
-    INSERT INTO workspace_members (workspace_id, user_id, role)
-    VALUES (${inv.workspace_id}, ${userId}, ${inv.role})
-    ON CONFLICT (workspace_id, user_id) DO UPDATE SET role = ${inv.role}
-  `;
-
-  await sql`
-    UPDATE invitations SET status = 'accepted', accepted_at = CURRENT_TIMESTAMP WHERE id = ${inv.id}
-  `;
-
-  revalidatePath(`/dashboard/workspace/${inv.workspace_id}`);
-  return { workspaceId: inv.workspace_id, success: true };
 }
 
 export async function getInvitationByToken(token: string) {

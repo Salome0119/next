@@ -19,14 +19,10 @@ export default function NewWorkspacePage() {
 
     try {
       await createWorkspace(name.trim(), description.trim() || undefined);
-      // redirect() is called in the Server Action, so we won't reach here on success
     } catch (err) {
-      // redirect() throws a special error that Next.js catches
       if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
-        // Re-throw to let Next.js handle the redirect with the correct URL from server action
         throw err;
       }
-      // Handle real errors
       if (err instanceof Error) {
         setError(err.message);
       }
@@ -36,26 +32,30 @@ export default function NewWorkspacePage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-8">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm animate-fade-in">
           <div className="text-center mb-8">
-            <Link href="/dashboard" className="inline-flex items-center gap-2 text-2xl font-bold text-blue-400 font-orbitron tracking-wider mb-6">
-              <span>📝</span> TaskFlow
+            <Link href="/dashboard" className="inline-flex items-center gap-2 text-2xl font-heading font-bold tracking-tight mb-6">
+              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-xl">P</span>
+              <span>PlanAI</span>
             </Link>
-            <h1 className="text-2xl font-semibold mb-2">Crear nuevo workspace</h1>
-            <p className="text-slate-500">Configura tu espacio de trabajo colaborativo</p>
+            <h1 className="text-2xl font-heading font-semibold mb-2">Crear nuevo workspace</h1>
+            <p className="text-slate-500 dark:text-slate-400">Configura tu espacio de trabajo colaborativo</p>
           </div>
 
           {error && (
-            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm" role="alert">
+            <div className="mb-6 p-3 bg-red-500/10 border border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-sm flex items-center gap-2 animate-slide-in" role="alert">
+              <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
               {error}
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-slate-300 mb-1">
+              <label htmlFor="name" className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5">
                 Nombre del workspace
               </label>
               <input
@@ -65,14 +65,14 @@ export default function NewWorkspacePage() {
                 onChange={e => setName(e.target.value)}
                 required
                 maxLength={50}
-                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+                className="input-base"
                 placeholder="Mi equipo"
                 autoFocus
               />
             </div>
 
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-slate-300 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-slate-800 dark:text-slate-300 mb-1.5">
                 Descripción (opcional)
               </label>
               <textarea
@@ -81,7 +81,7 @@ export default function NewWorkspacePage() {
                 onChange={e => setDescription(e.target.value)}
                 maxLength={200}
                 rows={3}
-                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200 resize-none"
+                className="input-base resize-none"
                 placeholder="Describe el propósito de este workspace..."
               />
             </div>
@@ -89,7 +89,7 @@ export default function NewWorkspacePage() {
             <button
               type="submit"
               disabled={loading || !name.trim()}
-              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+              className="w-full btn-primary justify-center"
             >
               {loading ? (
                 <>
@@ -102,7 +102,7 @@ export default function NewWorkspacePage() {
 
           <Link
             href="/dashboard"
-            className="block text-center mt-6 text-slate-500 hover:text-slate-400 text-sm"
+            className="block text-center mt-6 text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-slate-300 text-sm"
           >
             ← Volver al dashboard
           </Link>

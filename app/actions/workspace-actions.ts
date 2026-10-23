@@ -4,9 +4,19 @@ import sql from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { Resend } from 'resend';
-
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendInvitationEmail } from '@/lib/email';
+import {
+  createWorkspaceSchema,
+  inviteMemberSchema,
+  updateMemberRoleSchema,
+  removeMemberSchema,
+  deleteWorkspaceSchema,
+  formatZodError,
+  createActionError,
+  createActionSuccess,
+  createValidationErrorResult,
+  type ActionResult,
+} from '@/lib/validations';
 
 async function getCurrentUserId(): Promise<number | null> {
   const session = await auth();
@@ -22,27 +32,38 @@ async function getUserRoleInWorkspace(workspaceId: number, userId: number): Prom
   return (result[0]?.role as 'owner' | 'admin' | 'member') || null;
 }
 
-export async function createWorkspace(name: string, description?: string) {
+export async function createWorkspace(name: string, description?: string): Promise<ActionResult<{ id: number }>> {
   const userId = await getCurrentUserId();
   if (!userId) {
-    redirect('/');
+    return createActionError<{ id: number }>('Debes iniciar sesión para crear un workspace');
   }
 
-  const workspaces = await sql`
-    INSERT INTO workspaces (name, description, created_by)
-    VALUES (${name}, ${description || null}, ${userId})
-    RETURNING *
-  `;
-  const workspace = workspaces[0];
+  const validation = createWorkspaceSchema.safeParse({ name, description });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
+  }
 
-  await sql`
-    INSERT INTO workspace_members (workspace_id, user_id, role)
-    VALUES (${workspace.id}, ${userId}, 'owner')
-  `;
+  try {
+    const workspaces = await sql`
+      INSERT INTO workspaces (name, description, created_by)
+      VALUES (${validation.data.name}, ${validation.data.description || null}, ${userId})
+      RETURNING *
+    `;
+    const workspace = workspaces[0];
 
-  revalidatePath('/dashboard');
-  revalidatePath(`/dashboard/workspace/${workspace.id}`);
-  redirect(`/dashboard/workspace/${workspace.id}`);
+    await sql`
+      INSERT INTO workspace_members (workspace_id, user_id, role)
+      VALUES (${workspace.id}, ${userId}, 'owner')
+    `;
+
+    revalidatePath('/dashboard');
+    revalidatePath(`/dashboard/workspace/${workspace.id}`);
+
+    return createActionSuccess({ id: workspace.id });
+  } catch (error) {
+    console.error('[CREATE WORKSPACE ERROR]', error);
+    return createActionError<{ id: number }>('Error al crear el workspace. Inténtalo de nuevo.');
+  }
 }
 
 export async function getUserWorkspaces() {
@@ -103,7 +124,6 @@ export async function getWorkspaceMembersWithInvitations(workspaceId: number) {
   const role = await getUserRoleInWorkspace(workspaceId, userId);
   if (!role) throw new Error('No eres miembro de este workspace');
 
-  // Get accepted members
   const members = await sql`
     SELECT wm.*, u.email, u.name
     FROM workspace_members wm
@@ -114,7 +134,6 @@ export async function getWorkspaceMembersWithInvitations(workspaceId: number) {
       wm.joined_at
   `;
 
-  // Get pending invitations
   const invitations = await sql`
     SELECT i.*, u.name as invited_by_name
     FROM invitations i
@@ -154,61 +173,93 @@ export async function getWorkspaceMembersWithInvitations(workspaceId: number) {
   return [...memberList, ...invitationList];
 }
 
-export async function updateMemberRole(workspaceId: number, targetUserId: number, newRole: 'admin' | 'member') {
+export async function updateMemberRole(workspaceId: number, targetUserId: number, newRole: 'admin' | 'member'): Promise<ActionResult> {
   const userId = await getCurrentUserId();
-  if (!userId) throw new Error('No autenticado');
+  if (!userId) return createActionError<void>('No autenticado');
 
-  const role = await getUserRoleInWorkspace(workspaceId, userId);
-  if (role !== 'owner' && role !== 'admin') throw new Error('Sin permisos');
+  const validation = updateMemberRoleSchema.safeParse({ workspaceId, targetUserId, newRole });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
+  }
 
-  // Admins can only assign member role, not admin
-  if (role === 'admin' && newRole === 'admin') throw new Error('Solo el owner puede asignar role admin');
+  try {
+    const role = await getUserRoleInWorkspace(workspaceId, userId);
+    if (!role) return createActionError<void>('No eres miembro de este workspace');
+    if (role !== 'owner' && role !== 'admin') return createActionError<void>('No tienes permisos para cambiar roles');
 
-  const targetRole = await getUserRoleInWorkspace(workspaceId, targetUserId);
-  if (!targetRole) throw new Error('Usuario no es miembro');
-  if (targetRole === 'owner') throw new Error('No se puede cambiar el role del owner');
+    if (role === 'admin' && newRole === 'admin') return createActionError<void>('Solo el propietario puede asignar rol de administrador');
 
-  await sql`
-    UPDATE workspace_members 
-    SET role = ${newRole}
-    WHERE workspace_id = ${workspaceId} AND user_id = ${targetUserId}
-  `;
+    const targetRole = await getUserRoleInWorkspace(workspaceId, targetUserId);
+    if (!targetRole) return createActionError<void>('El usuario no es miembro de este workspace');
+    if (targetRole === 'owner') return createActionError<void>('No se puede cambiar el rol del propietario');
 
-  revalidatePath(`/dashboard/workspace/${workspaceId}`);
-  return { success: true };
+    await sql`
+      UPDATE workspace_members 
+      SET role = ${newRole}
+      WHERE workspace_id = ${workspaceId} AND user_id = ${targetUserId}
+    `;
+
+    revalidatePath(`/dashboard/workspace/${workspaceId}`);
+    return createActionSuccess(undefined);
+  } catch (error) {
+    console.error('[UPDATE MEMBER ROLE ERROR]', error);
+    return createActionError<void>('Error al actualizar el rol. Inténtalo de nuevo.');
+  }
 }
 
-export async function removeMember(workspaceId: number, targetUserId: number) {
+export async function removeMember(workspaceId: number, targetUserId: number): Promise<ActionResult> {
   const userId = await getCurrentUserId();
-  if (!userId) throw new Error('No autenticado');
+  if (!userId) return createActionError<void>('No autenticado');
 
-  const role = await getUserRoleInWorkspace(workspaceId, userId);
-  if (role !== 'owner' && role !== 'admin') throw new Error('Sin permisos');
+  const validation = removeMemberSchema.safeParse({ workspaceId, targetUserId });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
+  }
 
-  const targetRole = await getUserRoleInWorkspace(workspaceId, targetUserId);
-  if (!targetRole) throw new Error('Usuario no es miembro');
-  if (targetRole === 'owner') throw new Error('No se puede remover al owner');
+  try {
+    const role = await getUserRoleInWorkspace(workspaceId, userId);
+    if (!role) return createActionError<void>('No eres miembro de este workspace');
+    if (role !== 'owner' && role !== 'admin') return createActionError<void>('No tienes permisos para remover miembros');
 
-  await sql`
-    DELETE FROM workspace_members 
-    WHERE workspace_id = ${workspaceId} AND user_id = ${targetUserId}
-  `;
+    const targetRole = await getUserRoleInWorkspace(workspaceId, targetUserId);
+    if (!targetRole) return createActionError<void>('El usuario no es miembro de este workspace');
+    if (targetRole === 'owner') return createActionError<void>('No se puede remover al propietario');
 
-  revalidatePath(`/dashboard/workspace/${workspaceId}`);
-  return { success: true };
+    await sql`
+      DELETE FROM workspace_members 
+      WHERE workspace_id = ${workspaceId} AND user_id = ${targetUserId}
+    `;
+
+    revalidatePath(`/dashboard/workspace/${workspaceId}`);
+    return createActionSuccess(undefined);
+  } catch (error) {
+    console.error('[REMOVE MEMBER ERROR]', error);
+    return createActionError<void>('Error al remover el miembro. Inténtalo de nuevo.');
+  }
 }
 
-export async function deleteWorkspace(workspaceId: number) {
+export async function deleteWorkspace(workspaceId: number): Promise<ActionResult> {
   const userId = await getCurrentUserId();
-  if (!userId) throw new Error('No autenticado');
+  if (!userId) return createActionError<void>('No autenticado');
 
-  const role = await getUserRoleInWorkspace(workspaceId, userId);
-  if (role !== 'owner') throw new Error('Solo el owner puede eliminar el workspace');
+  const validation = deleteWorkspaceSchema.safeParse({ workspaceId });
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
+  }
 
-  await sql`DELETE FROM workspaces WHERE id = ${workspaceId}`;
+  try {
+    const role = await getUserRoleInWorkspace(workspaceId, userId);
+    if (!role) return createActionError<void>('No eres miembro de este workspace');
+    if (role !== 'owner') return createActionError<void>('Solo el propietario puede eliminar el workspace');
 
-  revalidatePath('/dashboard');
-  return { success: true };
+    await sql`DELETE FROM workspaces WHERE id = ${workspaceId}`;
+
+    revalidatePath('/dashboard');
+    return createActionSuccess(undefined);
+  } catch (error) {
+    console.error('[DELETE WORKSPACE ERROR]', error);
+    return createActionError<void>('Error al eliminar el workspace. Inténtalo de nuevo.');
+  }
 }
 
 function generateToken(): string {
@@ -219,52 +270,60 @@ function generateToken(): string {
     .replace(/=/g, '');
 }
 
-export async function inviteMemberToWorkspaceAction(data: { workspaceId: number; email: string; role: 'admin' | 'member' }) {
+export async function getUserWorkspaceRole(workspaceId: number): Promise<'owner' | 'admin' | 'member' | null> {
+  const userId = await getCurrentUserId();
+  if (!userId) return null;
+  return getUserRoleInWorkspace(workspaceId, userId);
+}
+
+export async function inviteMemberToWorkspaceAction(data: { workspaceId: number; email: string; role: 'admin' | 'member' }): Promise<ActionResult<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>> {
+  const validation = inviteMemberSchema.safeParse(data);
+  if (!validation.success) {
+    return createValidationErrorResult(formatZodError(validation.error));
+  }
+
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return { success: false, error: 'No autenticado' };
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Debes iniciar sesión para invitar miembros');
     }
     const userId = Number(session.user.id);
 
-    // Check if user is workspace owner (creator) OR has explicit role in workspace_members
     const workspace = await sql`
-      SELECT created_by FROM workspaces WHERE id = ${data.workspaceId}
+      SELECT created_by, name FROM workspaces WHERE id = ${validation.data.workspaceId}
     `;
     
     if (workspace.length === 0) {
-      return { success: false, error: 'Workspace no encontrado' };
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Workspace no encontrado');
     }
 
     const isOwner = workspace[0].created_by === userId;
-    const memberRole = await getUserRoleInWorkspace(data.workspaceId, userId);
+    const memberRole = await getUserRoleInWorkspace(validation.data.workspaceId, userId);
     
-    // Allow if owner (creator) OR has explicit admin/owner role in workspace_members
     const canInvite = isOwner || memberRole === 'owner' || memberRole === 'admin';
     
     if (!canInvite) {
-      return { success: false, error: 'Sin permisos para invitar miembros' };
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('No tienes permisos para invitar miembros a este workspace');
     }
 
-    // Admins can only invite members, not other admins
-    if (!isOwner && memberRole === 'admin' && data.role === 'admin') {
-      return { success: false, error: 'Solo el owner puede invitar administradores' };
+    if (!isOwner && memberRole === 'admin' && validation.data.role === 'admin') {
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Solo el propietario puede invitar administradores');
     }
 
     const existingInvitation = await sql`
       SELECT * FROM invitations 
-      WHERE workspace_id = ${data.workspaceId} AND email = ${data.email.toLowerCase()} AND status = 'pending'
+      WHERE workspace_id = ${validation.data.workspaceId} AND email = ${validation.data.email.toLowerCase()} AND status = 'pending'
     `;
     if (existingInvitation.length > 0) {
-      return { success: false, error: 'Ya existe una invitación pendiente para este email' };
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Ya existe una invitación pendiente para este correo electrónico');
     }
 
     const existingMember = await sql`
       SELECT * FROM workspace_members 
-      WHERE workspace_id = ${data.workspaceId} AND user_id IN (SELECT id FROM users WHERE email = ${data.email.toLowerCase()})
+      WHERE workspace_id = ${validation.data.workspaceId} AND user_id IN (SELECT id FROM users WHERE email = ${validation.data.email.toLowerCase()})
     `;
     if (existingMember.length > 0) {
-      return { success: false, error: 'Este usuario ya es miembro del workspace' };
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Este usuario ya es miembro del workspace');
     }
 
     const token = generateToken();
@@ -272,60 +331,34 @@ export async function inviteMemberToWorkspaceAction(data: { workspaceId: number;
 
     const invitations = await sql`
       INSERT INTO invitations (workspace_id, email, role, token, invited_by, expires_at)
-      VALUES (${data.workspaceId}, ${data.email.toLowerCase()}, ${data.role}, ${token}, ${userId}, ${expiresAt})
+      VALUES (${validation.data.workspaceId}, ${validation.data.email.toLowerCase()}, ${validation.data.role}, ${token}, ${userId}, ${expiresAt})
       RETURNING *
     `;
 
-    revalidatePath(`/dashboard/workspace/${data.workspaceId}`);
+    revalidatePath(`/dashboard/workspace/${validation.data.workspaceId}`);
     
-    const inviteUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/invite/${token}`;
+    const workspaceName = workspace[0].name || 'PlanAI';
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!baseUrl) {
+      console.error('[INVITE ERROR] NEXT_PUBLIC_APP_URL no está configurado');
+      return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Error de configuración del servidor');
+    }
+    const inviteUrl = `${baseUrl}/invite/${token}`;
     
-    // Send email using Resend
-    if (resend && process.env.RESEND_API_KEY) {
-      try {
-        await resend.emails.send({
-          from: 'TaskFlow <invitaciones@taskflow.app>',
-          to: data.email,
-          subject: `Invitación a unirte a un workspace en TaskFlow`,
-          html: `
-            <!DOCTYPE html>
-            <html>
-            <head>
-              <meta charset="utf-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            </head>
-            <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-              <div style="background: #1e293b; border-radius: 12px; padding: 32px;">
-                <h1 style="color: #3b82f6; margin: 0 0 16px; font-size: 24px;">📨 Invitación a TaskFlow</h1>
-                <p style="color: #e2e8f0; margin: 0 0 24px; font-size: 16px;">Has sido invitado a unirte a un workspace en <strong>TaskFlow</strong>.</p>
-                <p style="color: #94a3b8; margin: 0 0 24px; font-size: 14px;">Rol: <strong style="color: #e2e8f0;">${data.role === 'admin' ? 'Administrador' : 'Miembro'}</strong></p>
-                <div style="text-align: center; margin: 32px 0;">
-                  <a href="${inviteUrl}" style="display: inline-block; background: #3b82f6; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 16px;">Aceptar invitación</a>
-                </div>
-                <p style="color: #64748b; font-size: 13px; margin: 0;">Si el botón no funciona, copia y pega este enlace en tu navegador:</p>
-                <p style="color: #3b82f6; font-size: 13px; word-break: break-all; margin: 8px 0 0;">${inviteUrl}</p>
-                <hr style="border: none; border-top: 1px solid #334155; margin: 24px 0;">
-                <p style="color: #64748b; font-size: 12px; margin: 0;">Esta invitación expira en 7 días. Si no esperabas esta invitación, puedes ignorar este correo.</p>
-              </div>
-            </body>
-            </html>
-          `,
-        });
-      } catch (emailError) {
-        console.error('[INVITATION EMAIL] Error enviando email:', emailError);
-      }
-    } else {
-      // Fallback: log to console if Resend is not configured
-      console.log(`[INVITATION EMAIL] To: ${data.email}`);
-      console.log(`[INVITATION EMAIL] Workspace ID: ${data.workspaceId}`);
-      console.log(`[INVITATION EMAIL] Role: ${data.role}`);
-      console.log(`[INVITATION EMAIL] Invite URL: ${inviteUrl}`);
-      console.log(`[INVITATION EMAIL] Token: ${token}`);
+    const emailResult = await sendInvitationEmail(validation.data.email, workspaceName, validation.data.role, inviteUrl);
+    
+    if (!emailResult.success) {
+      console.error('[INVITATION EMAIL] Failed to send:', emailResult.error);
     }
     
-    return { success: true, token, invitation: invitations[0], inviteUrl };
+    return createActionSuccess({
+      token,
+      invitation: invitations[0],
+      inviteUrl,
+      emailSent: emailResult.success,
+    });
   } catch (error) {
     console.error('[INVITE ERROR]', error);
-    return { success: false, error: error instanceof Error ? error.message : 'Error al enviar la invitación' };
+    return createActionError<{ token: string; invitation: unknown; inviteUrl: string; emailSent: boolean }>('Error al enviar la invitación. Inténtalo de nuevo.');
   }
 }
