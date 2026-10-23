@@ -1,0 +1,227 @@
+/* Onboarding Tour Styles - bundled by Next.js */
+
+/* Override driver.js defaults with our custom styles */
+.driver-popover {
+  all: unset !important;
+  font-family: var(--font-body), system-ui, -apple-system, sans-serif !important;
+  box-sizing: border-box !important;
+  color: #f8fafc !important;
+  z-index: 99999 !important;
+  background-color: #1e293b !important;
+  border: 2px solid #3b82f6 !important;
+  border-radius: 12px !important;
+  min-width: 320px !important;
+  max-width: 420px !important;
+  padding: 24px !important;
+  position: fixed !important;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  display: block !important;
+  pointer-events: auto !important;
+}
+
+.driver-popover-content {
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.driver-popover-title {
+  color: #f8fafc !important;
+  font-size: 1.125rem !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.75rem !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  line-height: 1.4 !important;
+}
+
+.driver-popover-description {
+  color: #cbd5e1 !important;
+  font-size: 0.875rem !important;
+  line-height: 1.6 !important;
+  display: block !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.driver-popover-footer {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  margin-top: 1.5rem !important;
+  padding-top: 1rem !important;
+  border-top: 1px solid #334155 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.driver-popover-navigation {
+  display: flex !important;
+  gap: 0.5rem !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.driver-popover-btn,
+.driver-popover-footer-btn {
+  all: unset !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 0.5rem !important;
+  padding: 0.625rem 1.25rem !important;
+  border-radius: 8px !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  border: none !important;
+  background: #3b82f6 !important;
+  color: white !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transition: background-color 0.2s !important;
+}
+
+.driver-popover-btn:hover,
+.driver-popover-footer-btn:hover {
+  background: #2563eb !important;
+}
+
+.driver-popover-btn-next {
+  background: #3b82f6 !important;
+}
+
+.driver-popover-btn-prev {
+  background: #64748b !important;
+}
+
+.driver-popover-btn-prev:hover {
+  background: #475569 !important;
+}
+
+.driver-popover-close-btn,
+.driver-popover-btn-close {
+  background: #ef4444 !important;
+}
+
+.driver-popover-close-btn:hover,
+.driver-popover-btn-close:hover {
+  background: #dc2626 !important;
+}
+
+.driver-popover-progress {
+  color: #94a3b8 !important;
+  font-size: 0.75rem !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Overlay - make it not block clicks */
+.driver-overlay {
+  z-index: 99998 !important;
+  pointer-events: none !important;
+  background: rgba(0, 0, 0, 0.75) !important;
+}
+
+.driver-overlay svg {
+  pointer-events: none !important;
+  display: none !important;
+}
+
+.driver-overlay-animated {
+  display: none !important;
+}
+
+.driver-highlighted-element {
+  z-index: 99997 !important;
+}
+
+/* Ensure driver active elements don't block */
+.driver-active .driver-overlay {
+  pointer-events: none !important;
+}
+
+.driver-active * {
+  pointer-events: none !important;
+}
+
+.driver-active .driver-active-element,
+.driver-active .driver-active-element *,
+.driver-popover,
+.driver-popover * {
+  pointer-events: auto !important;
+}
+
+/* Force animation to work */
+@keyframes driver-fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+.driver-fade .driver-overlay {
+  animation: driver-fade-in 0.3s ease-in-out !important;
+}
+
+.driver-fade .driver-popover {
+  animation: driver-fade-in 0.3s ease-in-out !important;
+}
+
+/* Arrow styles */
+.driver-popover-arrow {
+  content: "" !important;
+  border: 8px solid transparent !important;
+  position: absolute !important;
+}
+
+.driver-popover-arrow-side-top {
+  border-bottom-color: #1e293b !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  top: 100% !important;
+}
+
+.driver-popover-arrow-side-bottom {
+  border-top-color: #1e293b !important;
+  border-left-color: transparent !important;
+  border-right-color: transparent !important;
+  bottom: 100% !important;
+}
+
+.driver-popover-arrow-side-left {
+  border-right-color: #1e293b !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+  left: 100% !important;
+}
+
+.driver-popover-arrow-side-right {
+  border-left-color: #1e293b !important;
+  border-top-color: transparent !important;
+  border-bottom-color: transparent !important;
+  right: 100% !important;
+}
+
+.driver-popover-arrow-side-over,
+.driver-popover-arrow-side-center,
+.driver-popover-arrow-none {
+  display: none !important;
+}
+
+/* No scroll when tour active */
+.driver-no-scroll {
+  overflow: hidden !important;
+}
+
+.driver-active-element-parent-no-scroll {
+  overflow: hidden !important;
+}
+
+/* Ensure no interaction mode works */
+.driver-no-interaction,
+.driver-no-interaction * {
+  pointer-events: none !important;
+}

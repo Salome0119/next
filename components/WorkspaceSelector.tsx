@@ -47,7 +47,6 @@ export function WorkspaceSelector() {
     setIsOpen(false);
     try {
       await switchWorkspaceAction(workspaceId);
-      // redirect() throws, so this won't be reached
     } catch (error) {
       console.error('Error switching workspace:', error);
       setSwitching(null);
@@ -56,20 +55,19 @@ export function WorkspaceSelector() {
 
   const currentWorkspace = workspaces.find(w => w.id === currentWorkspaceId);
   
-  // Don't show during loading
   if (loading) return null;
 
   return (
-    <div className="relative">
+    <div className="relative" id="tour-workspace-select">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 bg-slate-800/50 border border-slate-700 hover:bg-slate-800"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
         aria-haspopup="true"
         aria-expanded={isOpen}
         disabled={switching !== null}
       >
-        <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-        <span className="text-slate-300 truncate max-w-[150px]">
+        <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500" />
+        <span className="text-slate-200 truncate max-w-[150px]">
           {currentWorkspace?.name || 'Seleccionar workspace'}
         </span>
         <svg className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -80,10 +78,10 @@ export function WorkspaceSelector() {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-64 bg-slate-800 rounded-xl border border-slate-700 shadow-xl z-50 overflow-hidden animate-slide-in">
+          <div className="absolute right-0 top-full mt-2 w-72 bg-slate-900 rounded-xl border border-slate-700 shadow-2xl z-50 overflow-hidden animate-slide-in">
             <div className="p-2">
               {loading ? (
-                <div className="py-4 text-center text-slate-500 text-sm">Cargando...</div>
+                <div className="py-4 text-center text-slate-400 text-sm">Cargando...</div>
               ) : (
                 <>
                   {workspaces.map(workspace => (
@@ -91,13 +89,13 @@ export function WorkspaceSelector() {
                       key={workspace.id}
                       onClick={() => handleSwitchWorkspace(workspace.id)}
                       disabled={switching === workspace.id}
-                      className={`w-full px-3 py-2 rounded-lg text-sm flex items-center gap-3 transition-colors ${
+                      className={`w-full px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${
                         workspace.id === currentWorkspaceId
-                          ? 'bg-blue-600/20 text-blue-300'
-                          : 'text-slate-300 hover:bg-slate-700/50 hover:text-white'
+                          ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
+                          : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                       } ${switching === workspace.id ? 'opacity-50 cursor-wait' : ''}`}
                     >
-                      <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                      <span className="w-2.5 h-2.5 rounded-full bg-gradient-to-br from-blue-500 to-indigo-500" />
                       <div className="flex-1 text-left min-w-0">
                         <p className="font-medium truncate">{workspace.name}</p>
                         <p className="text-xs text-slate-500 capitalize">{workspace.user_role}</p>
@@ -115,7 +113,7 @@ export function WorkspaceSelector() {
                   <hr className="my-2 border-slate-700" />
                   <button
                     onClick={() => window.location.href = '/dashboard/workspace/new'}
-                    className="w-full px-3 py-2 rounded-lg text-sm flex items-center gap-3 text-blue-400 hover:bg-slate-700/50 transition-colors"
+                    className="w-full px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 text-blue-400 hover:bg-slate-800 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

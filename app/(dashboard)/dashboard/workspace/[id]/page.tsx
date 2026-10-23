@@ -15,25 +15,31 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
     notFound();
   }
 
+  let tasksData;
+  let membersData;
+
   try {
-    const [tasksData, membersData] = await Promise.all([
+    const [tasksResult, membersResult] = await Promise.all([
       getTareas(1, 50, workspaceId),
       getWorkspaceMembers(workspaceId),
     ]);
 
-    if (!tasksData || !membersData) {
-      notFound();
-    }
-
-    return (
-      <WorkspaceDashboardClient
-        workspaceId={workspaceId}
-        initialTasks={tasksData.tareas}
-        initialMembers={membersData}
-      />
-    );
+    tasksData = tasksResult;
+    membersData = membersResult;
   } catch (error) {
     console.error('Error loading workspace data:', error);
     notFound();
   }
+
+  if (!tasksData || !membersData) {
+    notFound();
+  }
+
+  return (
+    <WorkspaceDashboardClient
+      workspaceId={workspaceId}
+      initialTasks={tasksData.tareas}
+      initialMembers={membersData}
+    />
+  );
 }

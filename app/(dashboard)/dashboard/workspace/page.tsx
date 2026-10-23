@@ -43,10 +43,10 @@ export default function WorkspaceIndexPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'owner': return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'admin': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'member': return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      default: return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+      case 'owner': return 'bg-purple-500/20 text-purple-600 dark:text-purple-400 border-purple-500/30';
+      case 'admin': return 'bg-blue-500/20 text-blue-600 dark:text-blue-400 border-blue-500/30';
+      case 'member': return 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border-emerald-500/30';
+      default: return 'bg-slate-500/20 text-slate-600 dark:text-slate-400 border-slate-500/30';
     }
   };
 
@@ -65,7 +65,7 @@ export default function WorkspaceIndexPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col">
+      <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] flex flex-col">
         <main className="flex-1 pt-14 flex items-center justify-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent" />
         </main>
@@ -74,12 +74,12 @@ export default function WorkspaceIndexPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-[#0b0f19] flex flex-col">
       <main className="flex-1 pt-14">
         <div className="max-w-4xl mx-auto w-full p-4 space-y-6">
           <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-blue-400 font-orbitron tracking-wider">Workspaces</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-blue-600 dark:text-blue-400 font-orbitron tracking-wider">Workspaces</h1>
               <p className="text-slate-500 text-sm mt-1">Gestiona y accede a tus espacios de trabajo</p>
             </div>
             <button
@@ -94,19 +94,19 @@ export default function WorkspaceIndexPage() {
           </header>
 
           {error && (
-            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm" role="alert">
+            <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-600 dark:text-red-400 text-sm" role="alert">
               {error}
             </div>
           )}
 
           {workspaces.length === 0 ? (
-            <div className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-10 text-center">
-              <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-slate-700/50 flex items-center justify-center">
-                <svg className="w-10 h-10 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-10 text-center">
+              <div className="mx-auto mb-4 w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-700/50 flex items-center justify-center">
+                <svg className="w-10 h-10 text-slate-400 dark:text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h2 className="text-lg font-medium text-slate-300 mb-2">No tienes workspaces aún</h2>
+              <h2 className="text-lg font-medium text-slate-900 dark:text-slate-300 mb-2">No tienes workspaces aún</h2>
               <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6">
                 Crea tu primer workspace para empezar a organizar tus tareas y colaborar con tu equipo
               </p>
@@ -123,11 +123,11 @@ export default function WorkspaceIndexPage() {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
 {workspaces.map(workspace => (
-                <div key={workspace.id} className="bg-slate-800/50 rounded-2xl border border-slate-700/50 p-5 hover:border-blue-500/50 hover:bg-slate-800/70 transition-all duration-200 flex flex-col h-full">
+                <div key={workspace.id} className="bg-white dark:bg-slate-800/50 rounded-2xl border border-slate-200 dark:border-slate-700/50 p-5 hover:border-blue-500/50 hover:bg-slate-50 dark:hover:bg-slate-800/70 transition-all duration-200 flex flex-col h-full">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1 min-w-0">
                       <Link href={`/dashboard/workspace/${workspace.id}`} className="block">
-                        <h3 className="text-lg font-semibold text-slate-100 truncate">{workspace.name}</h3>
+                        <h3 className="text-lg font-semibold text-slate-900 dark:text-slate-100 truncate">{workspace.name}</h3>
                         {workspace.description && (
                           <p className="text-slate-500 text-sm mt-1 truncate">{workspace.description}</p>
                         )}
@@ -144,7 +144,7 @@ export default function WorkspaceIndexPage() {
                           setSelectedWorkspaceId(workspace.id);
                           setShowInviteModal(true);
                         }}
-                        className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-700/50 transition-colors"
+                        className="p-2 rounded-lg text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-white hover:bg-blue-500/10 dark:hover:bg-slate-700/50 transition-colors"
                         aria-label={`Invitar a ${workspace.name}`}
                         title="Invitar miembros"
                       >

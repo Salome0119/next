@@ -29,7 +29,7 @@ interface AISaveSelectorProps {
   onCancel: () => void;
 }
 
-export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISaveSelectorProps) {
+export function AISaveSelector({ tasks, onSaveComplete, onCancel }: AISaveSelectorProps) {
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [selectedWorkspaceId, setSelectedWorkspaceId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -102,7 +102,7 @@ export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISave
 
   if (loading) {
     return (
-      <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50">
+      <div className="p-4 card-base">
         <div className="flex items-center gap-3 text-slate-400">
           <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-500 border-t-transparent" />
           <span>Cargando workspaces...</span>
@@ -112,15 +112,15 @@ export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISave
   }
 
   return (
-    <div className="p-4 bg-slate-800/50 rounded-xl border border-slate-700/50 space-y-4">
+    <div className="p-4 card-base space-y-4 animate-slide-in">
       <div className="flex items-center gap-3">
-        <div className="p-2 bg-emerald-600/20 rounded-lg">
+        <div className="p-2 bg-emerald-500/20 rounded-lg">
           <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
         </div>
         <div>
-          <h4 className="font-semibold text-slate-100">¿Dónde guardar las tareas generadas?</h4>
+          <h4 className="font-heading font-semibold text-slate-100">¿Dónde guardar las tareas generadas?</h4>
           <p className="text-xs text-slate-500">{tasks.length} tarea(s) lista(s) para guardar</p>
         </div>
       </div>
@@ -133,7 +133,7 @@ export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISave
           id="workspace-select"
           value={selectedWorkspaceId || 'personal'}
           onChange={e => setSelectedWorkspaceId(e.target.value === 'personal' ? null : e.target.value)}
-          className="w-full px-4 py-3 bg-slate-900/50 border border-slate-600 rounded-xl text-white focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 transition-all duration-200"
+          className="input-base"
           disabled={saving}
         >
           {workspaceOptions.map(opt => (
@@ -153,8 +153,8 @@ export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISave
               onClick={() => setSaveMode('all')}
               className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 saveMode === 'all'
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
+                  ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
+                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700/50'
               }`}
               disabled={saving}
             >
@@ -166,7 +166,7 @@ export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISave
               className={`flex-1 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
                 saveMode === 'single'
                   ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50'
+                  : 'bg-slate-800/50 text-slate-300 hover:bg-slate-700/50 border border-slate-700/50'
               }`}
               disabled={saving}
             >
@@ -202,7 +202,7 @@ export function AISaveSelector({ tasks, mode, onSaveComplete, onCancel }: AISave
         <button
           onClick={onCancel}
           disabled={saving}
-          className="px-4 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-slate-300 font-medium rounded-xl transition-colors"
+          className="btn-secondary"
         >
           Cancelar
         </button>

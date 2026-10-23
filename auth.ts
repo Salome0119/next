@@ -1,6 +1,7 @@
 import NextAuth from 'next-auth';
 import Credentials from 'next-auth/providers/credentials';
-import { getUserByEmail, verifyPassword } from '@/lib/auth-utils';
+import Google from 'next-auth/providers/google';
+import { getUserByEmail, verifyPassword, getUserByEmailOrCreate } from '@/lib/auth-utils';
 import sql from '@/lib/db';
 import { cookies } from 'next/headers';
 
@@ -15,6 +16,13 @@ async function getUserDefaultWorkspaceId(userId: number): Promise<number | null>
   return result[0]?.id || null;
 }
 
+async function getUserOnboardingStatus(userId: number): Promise<boolean> {
+  const result = await sql`
+    SELECT has_completed_onboarding FROM users WHERE id = ${userId}
+  `;
+  return result[0]?.has_completed_onboarding || false;
+}
+
 async function getUserAccessibleWorkspaceIds(userId: number): Promise<number[]> {
   const result = await sql`
     SELECT w.id FROM workspaces w
@@ -27,8 +35,26 @@ async function getUserAccessibleWorkspaceIds(userId: number): Promise<number[]> 
   return result.map(r => r.id);
 }
 
+async function getUserAvatarUrl(userId: number): Promise<string | null> {
+  const result = await sql`
+    SELECT avatar_url FROM users WHERE id = ${userId}
+  `;
+  return result[0]?.avatar_url || null;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          scope: 'openid email profile',
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    }),
     Credentials({
       name: 'credentials',
       credentials: {
@@ -68,6 +94,28 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
 
   callbacks: {
+    async signIn({ user, account, profile }) {
+      if (account?.provider === 'google') {
+        try {
+          const email = user.email;
+          const name = user.name || profile?.name || undefined;
+          
+          if (!email) return false;
+          
+          const dbUser = await getUserByEmailOrCreate(email, name);
+          
+          user.id = String(dbUser.id);
+          
+          // Store new user flag in user object for session callback
+          (user as { isNewUser?: boolean }).isNewUser = !dbUser.hasCompletedOnboarding;
+        } catch (error) {
+          console.error('[GOOGLE SIGNIN ERROR]', error);
+          return false;
+        }
+      }
+      return true;
+    },
+    
     async jwt({ token, user, trigger, session }) {
       // Handle user switching - if a new user logs in, COMPLETELY OVERWRITE token
       if (user) {
@@ -77,6 +125,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.name = user.name;
         token.email = user.email;
         token.workspaceId = await getUserDefaultWorkspaceId(Number(user.id));
+        token.hasCompletedOnboarding = await getUserOnboardingStatus(Number(user.id));
+        token.isNewUser = (user as { isNewUser?: boolean }).isNewUser === true;
+        token.avatarUrl = await getUserAvatarUrl(Number(user.id));
         
         // Clear any stale properties that might persist
         delete token.picture;
@@ -129,6 +180,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         (session.user as { name?: string }).name = token.name as string;
         (session.user as { email?: string }).email = token.email as string;
         (session.user as { workspaceId?: number | null }).workspaceId = token.workspaceId as number | null;
+        (session.user as { hasCompletedOnboarding?: boolean }).hasCompletedOnboarding = token.hasCompletedOnboarding as boolean | undefined;
+        (session.user as { isNewUser?: boolean }).isNewUser = token.isNewUser as boolean | undefined;
+        (session.user as { avatarUrl?: string | null }).avatarUrl = token.avatarUrl as string | null | undefined;
       }
       return session;
     },

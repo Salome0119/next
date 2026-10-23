@@ -1,0 +1,498 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "aiGenerator": "AI Generator",
+    "workspace": "Workspace",
+    "tasks": "Tasks",
+    "team": "Team",
+    "settings": "Settings",
+    "inviteMember": "Invite Member",
+    "accountSettings": "Account Settings",
+    "restartTour": "Review Tutorial",
+    "logout": "Sign Out",
+    "selectWorkspace": "Select workspace",
+    "newWorkspace": "New workspace"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overview of your activity",
+    "quickTask": "Quick new task",
+    "addTask": "Add",
+    "adding": "Adding...",
+    "placeholder": "Type a task and press Enter...",
+    "priority": {
+      "high": "🔴 High",
+      "medium": "🟡 Medium",
+      "low": "🟢 Low"
+    },
+    "workspaceTasks": "Workspace Tasks",
+    "collaborate": "Collaborate with your team in real time",
+    "pending": "pending",
+    "completed": "completed",
+    "total": "total",
+    "noTasks": "No tasks yet",
+    "noTasksDesc": "Create your first task above or use AI to generate tasks automatically",
+    "createFirstTask": "Create first task",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete task",
+    "assign": "Assign",
+    "unassigned": "Unassigned",
+    "created": "Created",
+    "priorityLabel": "Priority",
+    "summary": "Daily Summary",
+    "quickAccess": "Quick Access",
+    "aiGeneratorDesc": "Create tasks automatically",
+    "taskList": "Task List",
+    "details": "Details of",
+    "markPending": "Mark as pending",
+    "markCompleted": "Mark as completed",
+    "taskTitle": "Task Title",
+    "showing": "Showing",
+    "to": "to",
+    "of": "of",
+    "perPage": "per page",
+    "previousPage": "Previous page",
+    "nextPage": "Next page",
+    "page": "Page"
+  },
+  "settings": {
+    "title": "Account Settings",
+    "subtitle": "Manage your profile, security, preferences and data",
+    "tabs": {
+      "profile": "Profile",
+      "security": "Security",
+      "preferences": "Preferences",
+      "aiUsage": "AI Usage",
+      "account": "Account"
+    },
+    "profile": {
+      "title": "User Profile",
+      "subtitle": "Manage your personal information and avatar",
+      "fullName": "Full Name",
+      "email": "Email Address",
+      "verified": "Verified",
+      "emailNotChangeable": "Email cannot be changed from here",
+      "role": "Role / Profession",
+      "roleHelp": "Helps AI personalize responses for your role",
+      "selectRole": "Select your profession",
+      "saveChanges": "Save Changes",
+      "saving": "Saving...",
+      "avatar": "Profile Photo",
+      "avatarHelp": "JPG, PNG, WebP or GIF. Max 2MB.",
+      "uploading": "Uploading...",
+      "removeAvatar": "Remove Avatar",
+      "profileUpdated": "Profile updated successfully",
+      "avatarUpdated": "Avatar updated successfully",
+      "avatarRemoved": "Avatar removed"
+    },
+    "preferences": {
+      "title": "Global Preferences",
+      "subtitle": "Customize appearance, language and notifications",
+      "theme": {
+        "title": "Visual Theme",
+        "dark": "Dark Mode",
+        "darkDesc": "Dark background always",
+        "light": "Light Mode",
+        "lightDesc": "Light background always",
+        "system": "System",
+        "systemDesc": "Follow OS setting"
+      },
+      "language": {
+        "title": "Interface Language",
+        "spanish": "Español",
+        "english": "English"
+      },
+      "creativity": {
+        "title": "AI Creativity Level",
+        "subtitle": "Affects how AI generates content in the Text Generator",
+        "precise": "Precise",
+        "preciseDesc": "Exact and direct responses",
+        "balanced": "Balanced",
+        "balancedDesc": "Balance between precision and creativity",
+        "creative": "Creative",
+        "creativeDesc": "More imaginative responses"
+      },
+      "notifications": {
+        "title": "Email Notifications",
+        "email": "Enable email notifications",
+        "emailDesc": "Receive emails from the platform",
+        "weekly": "Weekly project digest",
+        "weeklyDesc": "Receive a summary every week",
+        "taskAlerts": "Task limit alerts",
+        "taskAlertsDesc": "Warnings when approaching limits"
+      },
+      "savePreferences": "Save Preferences",
+      "saving": "Saving...",
+      "saved": "Preferences saved successfully"
+    },
+    "security": {
+      "title": "Security & Authentication",
+      "subtitle": "Manage your password and active sessions",
+      "changePassword": "Change Password",
+      "currentPassword": "Current Password",
+      "newPassword": "New Password",
+      "confirmPassword": "Confirm New Password",
+      "showPassword": "Show Password",
+      "hidePassword": "Hide Password",
+      "passwordRequirements": {
+        "minLength": "At least 8 characters",
+        "uppercase": "At least one uppercase",
+        "lowercase": "At least one lowercase",
+        "number": "At least one number",
+        "specialChar": "At least one special character"
+      },
+      "updatePassword": "Update Password",
+      "updating": "Updating...",
+      "passwordUpdated": "Password updated successfully",
+      "activeSessions": "Active Sessions",
+      "currentSession": "Current Session",
+      "browser": "Browser",
+      "device": "Device",
+      "ip": "IP",
+      "lastActive": "Last Active",
+      "revokeOtherSessions": "Sign out other devices",
+      "revoking": "Signing out...",
+      "confirmRevoke": "Sign out of all other devices? You'll need to sign in again on them.",
+      "sessionsRevoked": "Sessions closed on other devices"
+    },
+    "aiUsage": {
+      "title": "AI Usage & Metrics",
+      "subtitle": "Monitor your token usage and generation history",
+      "metricsTitle": "AI Metrics",
+      "monthLabel": "Month",
+      "limit": "Limit",
+      "tokensUsed": "Tokens Used",
+      "generations": "Generations",
+      "tokensRemaining": "Tokens Remaining",
+      "monthlyUsage": "Monthly Usage",
+      "recentHistory": "Recent History",
+      "noHistory": "No generation history",
+      "promptPreview": "Prompt",
+      "date": "Date",
+      "tokens": "tokens",
+      "model": "Model",
+      "retry": "Retry",
+      "errorLoading": "Error loading AI usage data"
+    },
+    "account": {
+      "title": "Account Management",
+      "subtitle": "Export your data or delete your account permanently",
+      "exportData": "Export Data",
+      "exportDesc": "Download a complete copy of your personal data, settings, AI history, workspaces and tasks in JSON format.",
+      "exporting": "Preparing download...",
+      "download": "Export Data (JSON)",
+      "dangerZone": "Danger Zone",
+      "deleteAccount": "Delete Account",
+      "deleteWarning": "This action will permanently delete your account, all personal data, workspaces, tasks, AI history and settings. This action cannot be undone.",
+      "deleteConfirmation": "You will be asked to type \"DELETE\" and enter your current password to confirm.",
+      "confirmDeletion": "Confirm Deletion",
+      "typeDelete": "Type \"DELETE\"",
+      "password": "Current Password",
+      "cancel": "Cancel",
+      "deleteForever": "Delete Permanently",
+      "deleting": "Deleting..."
+    }
+  },
+  "workspace": {
+    "team": "Team",
+    "manageMembers": "Manage workspace members",
+    "yourRole": "Your role",
+    "inviteMember": "+ Invite Member",
+    "inviteFirstMember": "Invite First Member",
+    "noMembers": "No team members yet",
+    "noMembersDesc": "Invite your colleagues to start collaborating",
+    "pending": "Pending",
+    "expires": "Expires",
+    "invitedBy": "Invited by",
+    "roles": {
+      "owner": "Owner",
+      "admin": "Admin",
+      "member": "Member"
+    },
+    "settings": {
+      "title": "Workspace Settings",
+      "subtitle": "Manage members, invitations and configuration",
+      "invitations": "Invitations",
+      "inviteMember": "Invite Member",
+      "noInvitations": "No pending invitations",
+      "status": {
+        "pending": "pending",
+        "accepted": "accepted",
+        "revoked": "revoked",
+        "expired": "expired"
+      },
+      "copyLink": "Copy Link",
+      "revoke": "Revoke",
+      "members": "Members",
+      "noMembers": "No members",
+      "role": "Role",
+      "remove": "Remove Member",
+      "dangerZone": "Danger Zone",
+      "dangerDesc": "Deleting the workspace will permanently remove all tasks, members and invitations.",
+      "deleteWorkspace": "Delete Workspace",
+      "noPermission": "You don't have permission to manage this workspace. Contact the owner or admin."
+    },
+    "invite": {
+      "title": "Invite Member",
+      "subtitle": "Add a new member to this workspace",
+      "emailLabel": "Member Email",
+      "emailPlaceholder": "user@example.com",
+      "roleLabel": "Role",
+      "roleAdmin": "Admin",
+      "roleAdminDesc": "Can manage members and tasks",
+      "roleMember": "Member",
+      "roleMemberDesc": "Access to tasks and collaboration",
+      "sending": "Sending...",
+      "sendInvitation": "Send Invitation",
+      "invitationSent": "Invitation Sent",
+      "invitationSentDesc": "The invitation has been sent to the email address provided"
+    }
+  },
+  "onboarding": {
+    "welcome": "Welcome to PlanAI! 🎉",
+    "welcomeDesc": "Let's take a quick tour of the platform.",
+    "quickTask": {
+      "title": "Quick New Task",
+      "desc": "Write your task here and press Enter to create it instantly."
+    },
+    "workspace": {
+      "title": "Workspaces",
+      "desc": "Switch between your workspaces easily from here."
+    },
+    "aiGenerator": {
+      "title": "AI Generator",
+      "desc": "Generate structured plans and documents automatically."
+    }
+  },
+  "generator": {
+    "header": {
+      "title": "AI Automation",
+      "subtitle": "Extract tasks or plan your day with artificial intelligence"
+    },
+    "smartPasteTab": "Smart Paste",
+    "dailyPlannerTab": "Daily Planner",
+    "customQATab": "💬 Pregunta Personalizada",
+    "dropzone": {
+      "hint": "Drag and drop a PDF or Word file here",
+      "clickHint": "or click to select (max. 10 MB)"
+    },
+    "extractButton": "Extract Tasks with AI",
+    "generatePlanButton": "⚡ Generar plan inteligente",
+    "docQAButton": "💬 Consultar con IA",
+    "resultHeader": "AI Response",
+    "smartPaste": {
+      "inputLabel": "Text to extract tasks from",
+      "fileUploadAriaLabel": "Upload PDF or Word document for Smart Paste",
+      "inputPlaceholder": "Paste an email, meeting minutes, chat or notes...",
+      "hint": "AI will extract tasks with title, description and priority. You can also upload PDF or Word.",
+      "characters": "characters",
+      "docQAPlaceholder": "Ask something about the attached file...",
+      "docQAHint": "AI will analyze the file content to answer your query",
+      "noTasksFound": "No tasks found in the text.",
+      "noActivitiesGenerated": "No activities generated.",
+      "unknownError": "Unknown error"
+    },
+    "dailyPlanner": {
+      "inputPlaceholder": "Describe your intention for the day...\n\nE.g.: I want to dedicate the morning to deep work, then meetings in the afternoon, and time for exercise.",
+      "startTimeLabel": "Start time:",
+      "hint": "AI will create activities with contiguous time blocks"
+    },
+    "fileUpload": {
+      "processing": "Processing document...",
+      "ready": "File ready for extraction",
+      "remove": "Remove",
+      "error": "Error processing document",
+      "errorUnexpected": "An unexpected error occurred while processing the file"
+    },
+    "docQA": {
+      "copyAriaLabel": "Copy response to clipboard"
+    },
+    "history": {
+      "title": "Generation History",
+      "count": "generations"
+    },
+    "extractFromFileButton": "Extract Tasks from File with AI"
+  },
+  "generador": {
+    "title": "AI Text Generator",
+    "subtitle": "Generate content with AI and save it as a task in your workspace",
+    "promptLabel": "What would you like the AI to generate?",
+    "placeholder": "Type what you want the AI to generate (e.g. Write a task summary for the team)...",
+    "presets": {
+      "extractTasks": "📋 Extract Tasks",
+      "extractTasksPrompt": "Extract all actionable tasks from the following text. For each task indicate: clear title, brief description, priority (high/medium/low) and assignee if mentioned. Format: numbered list.",
+      "executiveSummary": "📝 Executive Summary",
+      "executiveSummaryPrompt": "Generate a professional executive summary of the following content. Include: main objective, key findings, decisions made, next steps and assignees. Max 300 words, executive tone.",
+      "createSchedule": "📅 Create Schedule",
+      "createSchedulePrompt": "Create a detailed schedule based on the information provided. Include: phases, milestones, estimated dates, duration, dependencies and assignees. Markdown table format.",
+      "smartPasteFormat": "⚡ Format with SmartPaste",
+      "smartPasteFormatPrompt": "Convert the following text into structured tasks for SmartPaste. Extract: task title, description, priority (high/medium/low), suggested time block and duration in minutes. JSON array format."
+    },
+    "charactersRemaining": "characters remaining",
+    "documentUpload": {
+      "dragDrop": "Drag a PDF or Word file here",
+      "orClick": "or click to select (max 10 MB)",
+      "processing": "Processing document...",
+      "ready": "Document ready for queries",
+      "activeContext": "Active context:",
+      "documentIncluded": "The document will be included in your request",
+      "viewText": "View text",
+      "remove": "Remove",
+      "error": "Error processing document"
+    },
+    "generate": "Generate with AI",
+    "generating": "Generating response...",
+    "aiResponse": "AI Response",
+    "edit": "✏️ Edit",
+    "saveEdit": "💾 Save",
+    "copy": "📋 Copy",
+    "copied": "Copied!",
+    "downloadPdf": "📥 Download PDF",
+    "downloadWord": "📄 Download Word",
+    "selectWorkspace": "Destination Workspace",
+    "noWorkspaces": "You don't have workspaces. Create one",
+    "priority": {
+      "label": "Priority",
+      "high": "🔴 High",
+      "medium": "🟡 Medium",
+      "low": "🟢 Low"
+    },
+    "saveToWorkspace": {
+      "label": "Create Task in Workspace",
+      "saving": "Saving...",
+      "success": "Task successfully saved to Workspace!",
+      "selectWorkspace": "Select a workspace to save the task"
+    },
+    "emptyState": {
+      "title": "Waiting for your prompt",
+      "desc": "Write something above and press \"Generate with AI\" to see the magic"
+    },
+    "history": {
+      "title": "Generation History",
+      "clear": "Clear history",
+      "noHistory": "No history yet",
+      "reuse": "Reuse",
+      "items": "items"
+    },
+    "filePreview": {
+      "title": "Extracted Text",
+      "copyAll": "Copy all text",
+      "close": "Close"
+    },
+    "docQA": {
+      "title": "Interactive Document Query",
+      "placeholder": "E.g.: Extract key tasks from section 3\nSummarize mentioned deadlines\nGenerate action plan from this document\nWho are the mentioned assignees?",
+      "hint": "AI will answer based exclusively on the uploaded document content.",
+      "send": "Send Query",
+      "sending": "Querying document...",
+      "response": "AI Response",
+      "copyResponse": "Copy Response",
+      "hide": "Hide interactive query",
+      "show": "Query Document (RAG)"
+    },
+    "tour": {
+      "welcome": "🎉 Welcome to the AI Generator!",
+      "welcomeDesc": "We'll show you how to create content and tasks with artificial intelligence.",
+      "presets": {
+        "title": "Quick Prompts",
+        "desc": "Use these buttons to get started quickly: extract tasks, summarize, create schedules or format for SmartPaste."
+      },
+      "prompt": {
+        "title": "Your AI Instruction",
+        "desc": "Write here what you want the AI to generate. Be specific for best results. Press Enter for new line, Ctrl+Enter to send."
+      },
+      "file": {
+        "title": "Attach Documents",
+        "desc": "Upload PDFs or Word docs for AI analysis. You can ask about content, extract tasks, summarize, etc."
+      },
+      "generate": {
+        "title": "Generate with AI",
+        "desc": "Click to send your prompt (and attached document if any) to the AI. You'll see the response below."
+      },
+      "workspace": {
+        "title": "Save as Task",
+        "desc": "Select a workspace and priority, then click \"Create Task in Workspace\" to save the response as an actionable task."
+      },
+      "result": {
+        "title": "Result Actions",
+        "desc": "Edit the response, copy to clipboard, or download as PDF/Word."
+      },
+      "smartPaste": {
+        "title": "Advanced Automation",
+        "desc": "SmartPaste converts text into structured tasks automatically. The Daily Planner organizes your day with AI."
+      },
+      "history": {
+        "title": "Generation History",
+        "desc": "Access your last 5 generations to reuse them or continue working."
+      }
+    }
+  },
+  "aiTools": {
+    "title": "AI Automation",
+    "subtitle": "Extract tasks or plan your day with artificial intelligence",
+    "modes": {
+      "smartPaste": "Smart Paste",
+      "dailyPlanner": "Daily Planner"
+    },
+    "smartPaste": {
+      "title": "Extract tasks with AI",
+      "placeholder": "Paste an email, meeting notes, chat or notes...\n\nE.g.: John, review the report by Friday. Mary, schedule client meeting Tuesday 10:00.",
+      "hint": "AI will extract tasks with title, description and priority. You can also upload PDF or Word.",
+      "docQaTitle": "Interactive Document Query",
+      "docQaPlaceholder": "E.g.: Extract key tasks from section 3\nSummarize mentioned deadlines\nGenerate action plan from this document\nWho are the mentioned assignees?",
+      "docQaHint": "AI will answer based exclusively on the uploaded document content.",
+      "docQaSend": "Send Query",
+      "docQaSending": "Querying document...",
+      "noTasksFound": "No tasks found in the text."
+    },
+    "dailyPlanner": {
+      "title": "Generate Smart Plan",
+      "placeholder": "Describe your intention for the day...\n\nE.g.: I want to dedicate morning to deep work, then afternoon meetings, and time for exercise.",
+      "startTime": "Start time:",
+      "hint": "AI will create activities with contiguous time blocks",
+      "noActivities": "No activities generated."
+    },
+    "processing": "Processing with AI...",
+    "saveAll": "Save All ({count})",
+    "clearResults": "Clear Results",
+    "generatedTasks": "Generated Tasks ({count})",
+    "saveTask": "Save",
+    "saving": "Saving...",
+    "aiComplete": "AI Completed - Save Tasks",
+    "saveDestination": "Where to save generated tasks?",
+    "tasksReady": "task(s) ready to save",
+    "personalDashboard": "Personal Dashboard",
+    "saveMode": {
+      "all": "Save All ({count})",
+      "single": "Choose One by One"
+    },
+    "confirmSave": "Save {count} task(s)",
+    "saveSuccess": "✅ {count} task(s) saved to {workspace}",
+    "saveError": "❌ Error saving task(s)"
+  },
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "today": "Today",
+    "now": "just now",
+    "min": " min",
+    "h": "h",
+    "d": "d",
+    "required": "Title is required",
+    "maxChars": "Maximum 100 characters",
+    "saving": "Saving...",
+    "saveError": "Error saving"
+  }
+}

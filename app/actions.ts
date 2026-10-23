@@ -33,8 +33,10 @@ export async function initDb() {
     CREATE TABLE IF NOT EXISTS tareas (
       id SERIAL PRIMARY KEY,
       titulo TEXT NOT NULL,
+      descripcion TEXT,
       prioridad TEXT DEFAULT 'media',
       completado BOOLEAN DEFAULT FALSE,
+      fecha_entrega DATE,
       creado_en TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `;
@@ -52,20 +54,55 @@ export async function initDb() {
     ALTER TABLE tareas 
     ADD COLUMN IF NOT EXISTS assigned_to_user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;
   `;
+  // Migración: agregar columna descripcion si no existe
+  await sql`
+    ALTER TABLE tareas 
+    ADD COLUMN IF NOT EXISTS descripcion TEXT;
+  `;
+  // Migración: agregar columna fecha_entrega si no existe
+  await sql`
+    ALTER TABLE tareas 
+    ADD COLUMN IF NOT EXISTS fecha_entrega DATE;
+  `;
 }
 
 // Obtener tareas con paginación (filtradas por workspace si se proporciona)
+interface TareaRow {
+  id: number;
+  titulo: string;
+  descripcion: string | null;
+  prioridad: string;
+  completado: boolean;
+  fecha_entrega: string | null;
+  creado_en: string;
+  workspace_id: number | null;
+  assigned_to_user_id: number | null;
+  assigned_to_name: string | null;
+  assigned_to_email: string | null;
+}
+
 export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
   await initDb();
   const offset = (page - 1) * pageSize;
   
-  let tareas: any[] = [];
-  let totalResult: any[] = [];
+  let tareas: TareaRow[] = [];
+  let totalResult: { count: string }[] = [];
   
   if (workspaceId) {
     console.log('[getTareas] Querying for workspaceId:', workspaceId);
     tareas = await sql`
-      SELECT t.*, u.name as assigned_to_name, u.email as assigned_to_email
+      SELECT 
+        t.id, 
+        t.titulo, 
+        t.descripcion, 
+        t.fecha_entrega, 
+        t.completado, 
+        t.prioridad, 
+        t.workspace_id, 
+        t.assigned_to_user_id, 
+        t.creado_en,
+        u.name as assigned_to_name, 
+        u.email as assigned_to_email
       FROM tareas t
       LEFT JOIN users u ON t.assigned_to_user_id = u.id
       WHERE t.workspace_id = ${workspaceId}
@@ -73,22 +110,33 @@ export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
       LIMIT ${pageSize} OFFSET ${offset}
     `;
     console.log('[getTareas] Found tasks:', tareas.length);
-    totalResult = await sql`SELECT COUNT(*) as count FROM tareas WHERE workspace_id = ${workspaceId}`;
+    totalResult = await sql`SELECT COUNT(*) as count FROM tareas WHERE workspace_id = ${workspaceId}` as { count: string }[];
   } else {
     // Para tareas personales (sin workspace), mostrar solo las del usuario actual
     const userId = await getCurrentUserId();
     if (userId) {
       tareas = await sql`
-        SELECT t.*, u.name as assigned_to_name, u.email as assigned_to_email
+        SELECT 
+          t.id, 
+          t.titulo, 
+          t.descripcion, 
+          t.fecha_entrega, 
+          t.completado, 
+          t.prioridad, 
+          t.workspace_id, 
+          t.assigned_to_user_id, 
+          t.creado_en,
+          u.name as assigned_to_name, 
+          u.email as assigned_to_email
         FROM tareas t
         LEFT JOIN users u ON t.assigned_to_user_id = u.id
         WHERE t.workspace_id IS NULL AND t.assigned_to_user_id = ${userId}
         ORDER BY t.id DESC 
         LIMIT ${pageSize} OFFSET ${offset}
       `;
-      totalResult = await sql`SELECT COUNT(*) as count FROM tareas WHERE workspace_id IS NULL AND assigned_to_user_id = ${userId}`;
+      totalResult = await sql`SELECT COUNT(*) as count FROM tareas WHERE workspace_id IS NULL AND assigned_to_user_id = ${userId}` as { count: string }[];
     } else {
-      totalResult = [{ count: 0 }];
+      totalResult = [{ count: '0' }];
     }
   }
   
@@ -98,43 +146,88 @@ export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
 
 // Agregar una tarea nueva desde un formulario
 export async function crearTarea(formData: FormData) {
-  const titulo = formData.get('titulo') as string;
-  const prioridad = (formData.get('prioridad') as string) || 'media';
-  const workspaceId = formData.get('workspaceId') ? Number(formData.get('workspaceId')) : null;
-  let assignedToUserId = formData.get('assignedToUserId') ? Number(formData.get('assignedToUserId')) : null;
+  console.log('[CREAR_TAREA] ==================== START ====================');
+  console.log('[CREAR_TAREA] Timestamp:', new Date().toISOString());
   
-  if (!titulo || titulo.trim() === '') return;
-
-  const userId = await getCurrentUserId();
-  if (!userId) throw new Error('No autenticado');
-
-  // Verificar acceso al workspace si se proporciona
-  if (workspaceId) {
-    const hasAccess = await verifyWorkspaceAccess(workspaceId, userId);
-    if (!hasAccess) throw new Error('Sin acceso a este workspace');
+  try {
+    const titulo = formData.get('titulo') as string;
+    const descripcion = formData.get('descripcion') as string | null;
+    const prioridad = (formData.get('prioridad') as string) || 'media';
+    const workspaceId = formData.get('workspaceId') ? Number(formData.get('workspaceId')) : null;
+    let assignedToUserId = formData.get('assignedToUserId') ? Number(formData.get('assignedToUserId')) : null;
     
-    // Verificar que el usuario asignado es miembro del workspace
-    if (assignedToUserId) {
-      const assigneeRole = await getUserWorkspaceRole(workspaceId, assignedToUserId);
-      if (!assigneeRole) throw new Error('El usuario asignado no es miembro del workspace');
+    console.log('[CREAR_TAREA] FormData parsed:', { titulo, descripcion, prioridad, workspaceId, assignedToUserId });
+    
+    if (!titulo || titulo.trim() === '') {
+      console.error('[CREAR_TAREA] Validation failed - title is empty');
+      return;
     }
-  } else {
-    // Tarea personal - asignar al usuario actual
-    assignedToUserId = userId;
+
+    const userId = await getCurrentUserId();
+    console.log('[CREAR_TAREA] Auth check - userId:', userId);
+    
+    if (!userId) {
+      console.error('[CREAR_TAREA] Authentication failed - no user ID');
+      throw new Error('No autenticado');
+    }
+
+    // Verificar acceso al workspace si se proporciona
+    if (workspaceId) {
+      console.log('[CREAR_TAREA] Verifying workspace access for workspaceId:', workspaceId);
+      const hasAccess = await verifyWorkspaceAccess(workspaceId, userId);
+      console.log('[CREAR_TAREA] Workspace access check result:', hasAccess);
+      
+      if (!hasAccess) {
+        console.error('[CREAR_TAREA] No access to workspace:', workspaceId);
+        throw new Error('Sin acceso a este workspace');
+      }
+      
+      // Verificar que el usuario asignado es miembro del workspace
+      if (assignedToUserId) {
+        console.log('[CREAR_TAREA] Checking assignee role for assignedToUserId:', assignedToUserId);
+        const assigneeRole = await getUserWorkspaceRole(workspaceId, assignedToUserId);
+        console.log('[CREAR_TAREA] Assignee role:', assigneeRole);
+        
+        if (!assigneeRole) {
+          console.error('[CREAR_TAREA] Assigned user is not a member of workspace');
+          throw new Error('El usuario asignado no es miembro del workspace');
+        }
+      }
+    } else {
+      // Tarea personal - asignar al usuario actual
+      assignedToUserId = userId;
+      console.log('[CREAR_TAREA] Personal task - assignedToUserId set to current user:', userId);
+    }
+
+    console.log('[CREAR_TAREA] Inserting task into database...');
+    const fechaEntrega = formData.get('fechaEntrega') as string | null;
+    console.log('[CREAR_TAREA] Insert params:', { titulo, descripcion, prioridad, workspaceId, assignedToUserId, fechaEntrega });
+    
+    const result = await sql`
+      INSERT INTO tareas (titulo, descripcion, prioridad, fecha_entrega, workspace_id, assigned_to_user_id)
+      VALUES (${titulo}, ${descripcion}, ${prioridad}, ${fechaEntrega}, ${workspaceId}, ${assignedToUserId})
+      RETURNING id, titulo, descripcion, prioridad, fecha_entrega, completado, creado_en, workspace_id, assigned_to_user_id;
+    `;
+    
+    console.log('[CREAR_TAREA] Database insert successful! Created task:', JSON.stringify(result[0], null, 2));
+    console.log('[CREAR_TAREA] Task ID:', result[0]?.id);
+
+    const revalidatePath_ = workspaceId ? `/dashboard/workspace/${workspaceId}` : '/dashboard';
+    console.log('[CREAR_TAREA] Revalidating path:', revalidatePath_);
+    revalidatePath(revalidatePath_);
+    revalidatePath('/dashboard');
+    
+    console.log('[CREAR_TAREA] ==================== SUCCESS ====================');
+    return result;
+  } catch (error) {
+    console.error('[CREAR_TAREA] ==================== ERROR ====================');
+    console.error('[CREAR_TAREA] Error type:', error?.constructor?.name);
+    console.error('[CREAR_TAREA] Error message:', error instanceof Error ? error.message : String(error));
+    console.error('[CREAR_TAREA] Error stack:', error instanceof Error ? error.stack : 'No stack trace');
+    console.error('[CREAR_TAREA] Full error object:', error);
+    console.error('[CREAR_TAREA] ==================== END ERROR ====================');
+    throw error;
   }
-
-  console.log('[crearTarea] Insertando:', titulo, 'prioridad:', prioridad, 'workspace:', workspaceId, 'assignedTo:', assignedToUserId);
-  const result = await sql`
-    INSERT INTO tareas (titulo, prioridad, workspace_id, assigned_to_user_id)
-    VALUES (${titulo}, ${prioridad}, ${workspaceId}, ${assignedToUserId})
-    RETURNING id, titulo, prioridad, completado, creado_en, workspace_id, assigned_to_user_id;
-  `;
-  console.log('[crearTarea] Resultado:', result);
-
-  const revalidatePath_ = workspaceId ? `/dashboard/workspace/${workspaceId}` : '/';
-  revalidatePath(revalidatePath_);
-  
-  return result;
 }
 
 // Eliminar una tarea
@@ -196,16 +289,26 @@ export async function toggleTarea(id: number) {
   revalidatePath(revalidatePath_);
 }
 
-// Actualizar tarea (título y prioridad)
-export async function actualizarTarea(formData: FormData) {
-  const id = Number(formData.get('id'));
-  const titulo = (formData.get('titulo') as string)?.trim();
-  const prioridad = formData.get('prioridad') as string;
+// Actualizar tarea (título, descripción, prioridad y fecha de entrega)
+export async function actualizarTarea(data: {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  prioridad: string;
+  fecha_entrega: string;
+}) {
+  const id = Number(data.id);
+  const titulo = data.titulo?.trim();
+  const descripcion = data.descripcion?.trim() || null;
+  const prioridad = data.prioridad;
+  const fechaEntrega = data.fecha_entrega?.trim() || null;
 
   if (!id) throw new Error('ID requerido');
   if (!titulo) throw new Error('Título requerido');
   if (titulo.length > 100) throw new Error('Máximo 100 caracteres');
+  if (descripcion && descripcion.length > 5000) throw new Error('Máximo 5000 caracteres en la descripción');
   if (!['alta', 'media', 'baja'].includes(prioridad)) throw new Error('Prioridad inválida');
+  if (fechaEntrega && !/^\d{4}-\d{2}-\d{2}$/.test(fechaEntrega)) throw new Error('Fecha de entrega inválida');
 
   const userId = await getCurrentUserId();
   if (!userId) throw new Error('No autenticado');
@@ -227,10 +330,13 @@ export async function actualizarTarea(formData: FormData) {
 
   await sql`
     UPDATE tareas 
-    SET titulo = ${titulo}, prioridad = ${prioridad}
+    SET titulo = ${titulo}, 
+        descripcion = ${descripcion}, 
+        prioridad = ${prioridad}, 
+        fecha_entrega = ${fechaEntrega}
     WHERE id = ${id}
   `;
-  
+
   const revalidatePath_ = taskWorkspaceId ? `/dashboard/workspace/${taskWorkspaceId}` : '/';
   revalidatePath(revalidatePath_);
 }
@@ -283,7 +389,7 @@ export async function getTasksByAssignee(workspaceId: number) {
   const hasAccess = await verifyWorkspaceAccess(workspaceId, userId);
   if (!hasAccess) throw new Error('Sin acceso a este workspace');
 
-  const tasks: any[] = await sql`
+  const tasks: unknown[] = await sql`
     SELECT t.*, u.name as assigned_to_name, u.email as assigned_to_email
     FROM tareas t
     LEFT JOIN users u ON t.assigned_to_user_id = u.id
@@ -292,15 +398,15 @@ export async function getTasksByAssignee(workspaceId: number) {
   `;
 
   // Agrupar por asignado
-  const grouped: Record<string, { userId: number | null; name: string | null; email: string | null; tasks: any[] }> = {};
+  const grouped: Record<string, { userId: number | null; name: string | null; email: string | null; tasks: unknown[] }> = {};
   
   for (const task of tasks) {
-    const key = task.assigned_to_user_id ? `user_${task.assigned_to_user_id}` : 'unassigned';
+    const key = (task as Record<string, unknown>).assigned_to_user_id ? `user_${(task as Record<string, unknown>).assigned_to_user_id}` : 'unassigned';
     if (!grouped[key]) {
       grouped[key] = {
-        userId: task.assigned_to_user_id,
-        name: task.assigned_to_name,
-        email: task.assigned_to_email,
+        userId: (task as Record<string, unknown>).assigned_to_user_id as number | null,
+        name: (task as Record<string, unknown>).assigned_to_name as string | null,
+        email: (task as Record<string, unknown>).assigned_to_email as string | null,
         tasks: [],
       };
     }
@@ -308,7 +414,7 @@ export async function getTasksByAssignee(workspaceId: number) {
   }
 
   // Obtener todos los miembros del workspace para incluir los que no tienen tareas
-  const members: any[] = await sql`
+  const members: unknown[] = await sql`
     SELECT wm.user_id, u.name, u.email, wm.role
     FROM workspace_members wm
     JOIN users u ON wm.user_id = u.id

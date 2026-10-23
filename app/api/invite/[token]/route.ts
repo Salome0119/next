@@ -25,5 +25,7 @@ export async function GET(
     workspace_name: invitation.workspace_name,
     email: invitation.email,
     role: invitation.role,
+    isGeneric: !invitation.email,
+    expires_at: invitation.expires_at,
   });
 }
