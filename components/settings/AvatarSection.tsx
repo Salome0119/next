@@ -1,6 +1,6 @@
 'use client';
 
-import { CheckCircle2, Palette, RotateCcw, Glasses, Headphones, Crown } from 'lucide-react';
+import { CheckCircle2, RotateCcw, Glasses, Headphones, Crown } from 'lucide-react';
 import Avatar3D from '@/components/avatar/Avatar3D';
 import {
   AVATAR_VARIANTS,
@@ -12,6 +12,16 @@ import { useTranslation } from '@/context/LanguageContext';
 const ACCENT_PALETTE = ['#a855f7', '#f472b6', '#22d3ee', '#34d399', '#fbbf24'];
 const EYE_PALETTE = ['#f472b6', '#38bdf8', '#c084fc', '#fbbf24', '#4ade80'];
 const BODY_PALETTE = ['#fdfbf7', '#f1f5f9', '#e9d5ff', '#ccfbf1', '#fef3c7'];
+const ACCESSORY_PALETTE = [
+  '#2a2f38',
+  '#f5f5f4',
+  '#7c3aed',
+  '#f43f5e',
+  '#0ea5e9',
+  '#f59e0b',
+  '#10b981',
+  '#64748b',
+];
 
 interface ColorFieldProps {
   label: string;
@@ -37,7 +47,7 @@ function ColorField({ label, description, value, palette, onChange }: ColorField
           aria-label={label}
         />
       </div>
-      <div className="mt-2.5 flex items-center gap-2" role="group" aria-label={`${label} quick palette`}>
+      <div className="mt-3 flex flex-wrap items-center gap-2" role="group" aria-label={`${label} quick palette`}>
         {palette.map((color) => (
           <button
             key={color}
@@ -53,7 +63,7 @@ function ColorField({ label, description, value, palette, onChange }: ColorField
             aria-pressed={value.toLowerCase() === color.toLowerCase()}
           />
         ))}
-        <span className="ml-auto font-mono text-[10px] text-slate-500">{value}</span>
+        <span className="ml-auto font-mono text-[10px] whitespace-nowrap text-slate-500">{value}</span>
       </div>
     </div>
   );
@@ -121,6 +131,41 @@ export function AvatarSection() {
               >
                 <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out ${settings.enabled ? 'translate-x-7' : 'translate-x-1'}`} aria-hidden="true" />
               </button>
+            </div>
+          </section>
+
+          {/* Accessory colors */}
+          <section>
+            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-violet-300 mb-3">Color de accesorios</h3>
+            <div className="space-y-3">
+              {(
+                [
+                  { key: 'glasses' as const, label: 'Gafas', description: 'Montura y bisagras metálicas.' },
+                  { key: 'headphones' as const, label: 'Audífonos', description: 'Diadema acolchada y orejeras.' },
+                  { key: 'hat' as const, label: 'Gorrito', description: 'Tejido de punto del gorro.' },
+                ] as const
+              ).map((accessory) => (
+                <div
+                  key={accessory.key}
+                  className={settings.accessories[accessory.key] ? '' : 'opacity-60 transition-opacity duration-200'}
+                >
+                  <ColorField
+                    label={accessory.label}
+                    description={
+                      settings.accessories[accessory.key]
+                        ? accessory.description
+                        : `${accessory.description} (actívalo para verlo)`
+                    }
+                    value={settings.accessoryColors[accessory.key]}
+                    palette={ACCESSORY_PALETTE}
+                    onChange={(color) =>
+                      updateSettings({
+                        accessoryColors: { ...settings.accessoryColors, [accessory.key]: color },
+                      })
+                    }
+                  />
+                </div>
+              ))}
             </div>
           </section>
 
@@ -235,6 +280,7 @@ export function AvatarSection() {
                   className="h-full w-full"
                   variant={settings.variant}
                   accessories={settings.accessories}
+                  accessoryColors={settings.accessoryColors}
                   reactionState={mood}
                   cameraPosition={[0, 0.8, 4.5]}
                   cameraFov={38}

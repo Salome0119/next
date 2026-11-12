@@ -3,13 +3,27 @@
 import { useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { TransformControls } from 'three/examples/jsm/controls/TransformControls.js';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { useAvatar } from '@/context/AvatarContext';
 
 const MODEL_URL = '/models/robot.glb';
 const MODEL_HEIGHT = 2.2;
 const PINK = 0xf472b6;
+
+// Head geometry measured from robot.glb, expressed in the "head" node's local
+// space (origin = head pivot). Accessories are authored in these units and then
+// parented to the head node so they follow its scale and tilt automatically.
+// The head is slightly wider than it is deep; accessories inherit the ratio.
+const HEAD_Z_RATIO = 0.994 / 1.123;
+const EYE_CENTER_Y = 0.61;
+const FACE_FRONT_Z = 1.05;
+
+// Base tints used when the settings layer does not provide accessory colours.
+const DEFAULT_ACCESSORY_COLORS: AvatarAccessoryColors = {
+  glasses: '#2a2f38',
+  headphones: '#26282e',
+  hat: '#3a3a40',
+};
 
 type Accessories = {
   glasses?: boolean;
@@ -22,12 +36,19 @@ type Accessories = {
   gorrito?: boolean;
 };
 
+interface AvatarAccessoryColors {
+  glasses: string;
+  headphones: string;
+  hat: string;
+}
+
 interface Avatar3DProps {
   interactive?: boolean;
   compact?: boolean;
   className?: string;
   variant?: 'classic' | 'chibi' | 'cyber-cat';
   accessories?: Accessories;
+  accessoryColors?: AvatarAccessoryColors;
   reactionState?: 'idle' | 'thinking' | 'success';
   autoRotate?: boolean;
   cameraPosition?: [number, number, number];
@@ -159,29 +180,182 @@ function getVariantConfig(variant: string): VariantConfig {
   return VARIANT_CONFIG[variant as keyof typeof VARIANT_CONFIG] ?? VARIANT_CONFIG.classic;
 }
 
+function createKnitTexture() {
+  const width = 512;
+  const height = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = width;
+  canvas.height = height;
+  const context = canvas.getContext('2d');
+
+  if (context) {
+    // Neutral base so the user-chosen wool tint drives the final colour and the
+    // rib shading survives as a multiplier.
+    context.fillStyle = '#c0c0c8';
+    context.fillRect(0, 0, width, height);
+
+    // Ribbed knit columns with soft shading to fake the wool relief.
+    const ribs = 26;
+    const ribWidth = width / ribs;
+    for (let i = 0; i < ribs; i += 1) {
+      const x = i * ribWidth;
+      const gradient = context.createLinearGradient(x, 0, x + ribWidth, 0);
+      gradient.addColorStop(0, 'rgba(30, 30, 38, 0.9)');
+      gradient.addColorStop(0.32, 'rgba(150, 150, 160, 0.5)');
+      gradient.addColorStop(0.5, 'rgba(205, 205, 215, 0.45)');
+      gradient.addColorStop(0.68, 'rgba(150, 150, 160, 0.5)');
+      gradient.addColorStop(1, 'rgba(30, 30, 38, 0.9)');
+      context.fillStyle = gradient;
+      context.fillRect(x, 0, ribWidth, height);
+
+      // Stitched V pattern between the ribs.
+      context.strokeStyle = 'rgba(40, 40, 48, 0.55)';
+      context.lineWidth = 1.5;
+      const rows = 22;
+      for (let r = 0; r < rows; r += 1) {
+        const y = (r * height) / rows;
+        context.beginPath();
+        context.moveTo(x + ribWidth * 0.25, y);
+        context.lineTo(x + ribWidth * 0.5, y + height / rows / 2);
+        context.lineTo(x + ribWidth * 0.75, y);
+        context.stroke();
+      }
+    }
+
+    // Subtle fibre noise so the wool does not look flat.
+    const image = context.getImageData(0, 0, width, height);
+    const data = image.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const noise = (Math.random() - 0.5) * 26;
+      data[i] = Math.max(0, Math.min(255, data[i] + noise));
+      data[i + 1] = Math.max(0, Math.min(255, data[i + 1] + noise));
+      data[i + 2] = Math.max(0, Math.min(255, data[i + 2] + noise));
+    }
+    context.putImageData(image, 0, 0);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(2, 1);
+  return texture;
+}
+
+function createLeatherTexture() {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext('2d');
+
+  if (context) {
+    context.fillStyle = '#1c1c1f';
+    context.fillRect(0, 0, size, size);
+
+    // Pebbled grain: clustered soft blobs mimic leather under low light.
+    for (let i = 0; i < 2600; i += 1) {
+      const radius = 2 + Math.random() * 6;
+      const x = Math.random() * size;
+      const y = Math.random() * size;
+      const shade = 24 + Math.floor(Math.random() * 34);
+      const gradient = context.createRadialGradient(x, y, 0, x, y, radius);
+      gradient.addColorStop(0, `rgba(${shade}, ${shade}, ${shade + 4}, 0.5)`);
+      gradient.addColorStop(1, 'rgba(10, 10, 12, 0)');
+      context.fillStyle = gradient;
+      context.beginPath();
+      context.arc(x, y, radius, 0, Math.PI * 2);
+      context.fill();
+    }
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(3, 3);
+  return texture;
+}
+
+function createLabelTexture() {
+  const size = 256;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const context = canvas.getContext('2d');
+
+  if (context) {
+    // Cream leather patch with a stitched border.
+    context.fillStyle = '#e8e2d4';
+    context.fillRect(0, 0, size, size);
+
+    context.strokeStyle = 'rgba(40, 38, 34, 0.55)';
+    context.lineWidth = 3;
+    context.setLineDash([7, 6]);
+    context.strokeRect(14, 14, size - 28, size - 28);
+    context.setLineDash([]);
+
+    // Mountain range emblem.
+    context.fillStyle = '#1b1b1e';
+    context.beginPath();
+    context.moveTo(48, 168);
+    context.lineTo(92, 92);
+    context.lineTo(120, 134);
+    context.lineTo(150, 78);
+    context.lineTo(208, 168);
+    context.closePath();
+    context.fill();
+
+    context.fillStyle = '#3a3a40';
+    context.beginPath();
+    context.moveTo(82, 112);
+    context.lineTo(92, 96);
+    context.lineTo(102, 112);
+    context.closePath();
+    context.fill();
+
+    context.fillStyle = '#1b1b1e';
+    context.fillRect(48, 182, 160, 8);
+  }
+
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  return texture;
+}
+
 function createGlasses(): THREE.Group {
   const glassesGroup = new THREE.Group();
 
-  // Transparent lens material (cristales transparentes)
-  const lensMaterial = new THREE.MeshStandardMaterial({
-    color: 0xffffff,
+  // Tinted lens with a subtle reflective sheen.
+  const lensMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x11151f,
     transparent: true,
-    opacity: 0.25,
-    roughness: 0.1,
-    metalness: 0.1,
+    opacity: 0.42,
+    roughness: 0.08,
+    metalness: 0.25,
+    clearcoat: 1,
+    clearcoatRoughness: 0.05,
     side: THREE.DoubleSide,
   });
 
-  // Solid frame material (montura superior oscura)
+  // Matte gunmetal frame matching the headphone hardware.
   const frameMaterial = new THREE.MeshStandardMaterial({
-    color: 0x0e1522,
-    roughness: 0.2,
-    metalness: 0.6,
+    color: 0x15161a,
+    roughness: 0.32,
+    metalness: 0.75,
   });
 
-  // Lente principal: caja ancha ligeramente arqueada (estilo protector/deportivo)
-  const lensWidth = 1.05;
-  const lensHeight = 0.26;
+  const accentMaterial = new THREE.MeshStandardMaterial({
+    color: 0x8d9299,
+    roughness: 0.22,
+    metalness: 0.95,
+  });
+
+  // Frame (and the metal hinges) follow the chosen accessory colour.
+  glassesGroup.userData.tintMaterials = [frameMaterial];
+
+  const lensWidth = 1.06;
+  const lensHeight = 0.42;
   const lensDepth = 0.05;
 
   // Main wraparound lens — single wide curved piece
@@ -193,152 +367,310 @@ function createGlasses(): THREE.Group {
   mainLens.scale.set(1, 0.92, 0.85);
   glassesGroup.add(mainLens);
 
-  // Borde superior sólido (barra superior de la montura)
+  // Thick upper rim that carries the frame weight.
   const topBar = new THREE.Mesh(
-    new THREE.BoxGeometry(lensWidth + 0.06, 0.035, lensDepth * 0.8),
+    new THREE.BoxGeometry(lensWidth + 0.06, 0.05, lensDepth * 1.1),
     frameMaterial
   );
-  topBar.position.set(0, lensHeight * 0.5 + 0.015, lensDepth * 0.25);
+  topBar.position.set(0, lensHeight * 0.5 + 0.012, lensDepth * 0.25);
   glassesGroup.add(topBar);
 
-  // Borde inferior fino para completar la envoltura
+  // Thin lower rim completing the wrap.
   const bottomBar = new THREE.Mesh(
-    new THREE.BoxGeometry(lensWidth + 0.06, 0.02, lensDepth * 0.7),
+    new THREE.BoxGeometry(lensWidth + 0.06, 0.024, lensDepth * 0.85),
     frameMaterial
   );
   bottomBar.position.set(0, -lensHeight * 0.5 - 0.008, lensDepth * 0.2);
   glassesGroup.add(bottomBar);
 
-  // Patillas laterales (temples) que se ajustan a los lados de la cabeza
+  // Side hinges in brushed metal.
+  const createHinge = (side: number) => {
+    const hinge = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, 0.07, 0.07),
+      accentMaterial
+    );
+    hinge.position.set(side * (lensWidth * 0.5 + 0.045), lensHeight * 0.32, 0);
+    return hinge;
+  };
+  glassesGroup.add(createHinge(-1));
+  glassesGroup.add(createHinge(1));
+
+  // Patillas laterales (temples) that run back along the surface of the head
+  // toward the ear discs. They are angled to stay outside the head shell so the
+  // arms remain visible instead of being swallowed by the head mesh.
   const createTemple = (side: number) => {
-    const templeGroup = new THREE.Group();
-    const arm = new THREE.Mesh(
-      new THREE.BoxGeometry(0.05, 0.045, 0.4),
+    const temple = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, 0.05, 0.6),
       frameMaterial
     );
-    // Extiende la patilla hacia atrás
-    arm.position.set(0, 0, -0.18);
-    templeGroup.add(arm);
-    templeGroup.position.set(side * (lensWidth * 0.5 + 0.06), 0, 0);
-    templeGroup.rotation.y = side * 0.3;
-    return templeGroup;
+    temple.position.set(side * 0.78, 0.08, -0.21);
+    temple.rotation.y = side * 2.31;
+    return temple;
   };
   glassesGroup.add(createTemple(-1));
   glassesGroup.add(createTemple(1));
 
   // Puente nasal fino que conecta el lente con la nariz
   const bridge = new THREE.Mesh(
-    new THREE.BoxGeometry(0.09, 0.03, lensDepth * 0.6),
+    new THREE.BoxGeometry(0.11, 0.032, lensDepth * 0.6),
     frameMaterial
   );
-  bridge.position.set(0, -lensHeight * 0.35, lensDepth * 0.2);
+  bridge.position.set(0, -lensHeight * 0.3, lensDepth * 0.2);
   glassesGroup.add(bridge);
 
-  // Posición a la altura de los ojos
-  glassesGroup.position.set(0, 0.68, 0.32);
+  // Situate at eye level on the face.
+  glassesGroup.position.set(0, EYE_CENTER_Y, FACE_FRONT_Z);
   return glassesGroup;
 }
 
 function createHeadphones(): THREE.Group {
   const headphonesGroup = new THREE.Group();
 
-  // Headband: arco superior azul metálico (TorusGeometry)
-  const headbandMat = new THREE.MeshStandardMaterial({
-    color: 0x1d4ed8,
-    roughness: 0.25,
-    metalness: 0.7,
-  });
-  const headbandGeo = new THREE.TorusGeometry(0.45, 0.04, 12, 32, Math.PI);
-  const headband = new THREE.Mesh(headbandGeo, headbandMat);
-  headphonesGroup.add(headband);
+  const leatherTexture = createLeatherTexture();
 
-  // Material para los exterior e interior de las orejeras
-  const earCupMat = new THREE.MeshStandardMaterial({
-    color: 0x1d4ed8,
-    roughness: 0.25,
-    metalness: 0.7,
+  // Padded leather headband (outer band).
+  const bandMaterial = new THREE.MeshStandardMaterial({
+    color: 0x191a1d,
+    map: leatherTexture,
+    roughness: 0.72,
+    metalness: 0.08,
   });
-  const cushionMat = new THREE.MeshStandardMaterial({
-    color: 0x1e293b,
-    roughness: 0.6,
-    metalness: 0.1,
+
+  // Brushed aluminium sliders visible under the band, as in the reference.
+  const metalMaterial = new THREE.MeshStandardMaterial({
+    color: 0x9aa0a8,
+    roughness: 0.28,
+    metalness: 0.95,
   });
+
+  // Matte plastic ear cup shells.
+  const shellMaterial = new THREE.MeshStandardMaterial({
+    color: 0x232428,
+    roughness: 0.42,
+    metalness: 0.35,
+  });
+
+  // Soft inner pads.
+  const padMaterial = new THREE.MeshStandardMaterial({
+    color: 0x111214,
+    map: leatherTexture,
+    roughness: 0.85,
+    metalness: 0.02,
+  });
+
+  // The leather and plastic parts follow the chosen accessory colour; the metal
+  // sliders stay steel so the hardware keeps its read.
+  headphonesGroup.userData.tintMaterials = [bandMaterial, shellMaterial, padMaterial];
+
+  // Headband: padded leather strap arcing over the crown. The curve is pushed
+  // back in Z so it clears the antenna rod and heart mounted on the head's
+  // vertical axis, while still reading as a band worn on the head.
+  const bandCurve = new THREE.CatmullRomCurve3([
+    new THREE.Vector3(-1.14, 0.96, -0.02),
+    new THREE.Vector3(-1.05, 1.36, -0.1),
+    new THREE.Vector3(-0.66, 1.68, -0.22),
+    new THREE.Vector3(0, 1.79, -0.27),
+    new THREE.Vector3(0.66, 1.68, -0.22),
+    new THREE.Vector3(1.05, 1.36, -0.1),
+    new THREE.Vector3(1.14, 0.96, -0.02),
+  ]);
+
+  const band = new THREE.Mesh(
+    new THREE.TubeGeometry(bandCurve, 96, 0.072, 14, false),
+    bandMaterial
+  );
+  band.scale.z = 0.8;
+  headphonesGroup.add(band);
+
+  // Slim metal frame tucked under the padded strap.
+  const coreCurve = new THREE.CatmullRomCurve3(
+    bandCurve.points.map((p) => new THREE.Vector3(p.x, p.y - 0.085, p.z + 0.01))
+  );
+  const bandCore = new THREE.Mesh(
+    new THREE.TubeGeometry(coreCurve, 96, 0.026, 10, false),
+    metalMaterial
+  );
+  headphonesGroup.add(bandCore);
+
+  // Metal slider arms descending from the band ends to each ear cup.
+  const createSlider = (side: number) => {
+    const slider = new THREE.Group();
+
+    const arm = new THREE.Mesh(
+      new THREE.BoxGeometry(0.05, 0.26, 0.062),
+      metalMaterial
+    );
+    arm.position.set(side * 1.19, 0.9, -0.015);
+    arm.rotation.z = side * -0.18;
+    slider.add(arm);
+
+    const lower = new THREE.Mesh(
+      new THREE.BoxGeometry(0.042, 0.14, 0.05),
+      metalMaterial
+    );
+    lower.position.set(side * 1.22, 0.76, -0.005);
+    lower.rotation.z = side * 0.12;
+    slider.add(lower);
+
+    return slider;
+  };
+  headphonesGroup.add(createSlider(-1));
+  headphonesGroup.add(createSlider(1));
 
   // Helper para crear cada orejera (capsa/vertical cylinder)
-  const createEarCup = (xOffset: number, isLeft: boolean) => {
+  const createEarCup = (side: number, isLeft: boolean) => {
     const cupGroup = new THREE.Group();
+    // Cup centres sit just outside the head shell and its side discs.
+    const cupX = side * 1.27;
+    const inward = isLeft ? 1 : -1;
 
-    // Exterior azul (outer capsule/cylinder)
+    // Outer shell: oval disc whose axis points outward along X.
     const outerCup = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.14, 0.16, 8, 16),
-      earCupMat
+      new THREE.CylinderGeometry(0.335, 0.335, 0.2, 36),
+      shellMaterial
     );
-    outerCup.rotation.x = Math.PI / 2;
+    outerCup.rotation.z = Math.PI / 2;
+    outerCup.scale.set(1.16, 1, 0.9);
     cupGroup.add(outerCup);
 
-    // Interior oscuro/negro (almohadilla interna)
-    const innerCushion = new THREE.Mesh(
-      new THREE.CapsuleGeometry(0.11, 0.14, 8, 16),
-      cushionMat
+    // Brushed metal accent ring on the outer face.
+    const accentRing = new THREE.Mesh(
+      new THREE.TorusGeometry(0.28, 0.016, 10, 40),
+      metalMaterial
     );
-    innerCushion.rotation.x = Math.PI / 2;
-    // Posicióna hacia el interior (hacia el centro de la cabeza)
-    const inward = isLeft ? 1 : -1;
-    innerCushion.position.set(inward * (0.18 - 0.13 - 0.01), 0, 0);
+    accentRing.rotation.y = Math.PI / 2;
+    accentRing.scale.set(1, 1.16, 0.9);
+    accentRing.position.x = inward * 0.1;
+    cupGroup.add(accentRing);
+
+    // Inner cushion: soft leather pad pressed against the head.
+    const innerCushion = new THREE.Mesh(
+      new THREE.TorusGeometry(0.225, 0.062, 14, 36),
+      padMaterial
+    );
+    innerCushion.rotation.y = Math.PI / 2;
+    innerCushion.scale.set(1, 1.16, 0.9);
+    innerCushion.position.x = inward * -0.1;
     cupGroup.add(innerCushion);
 
-    cupGroup.position.set(xOffset, 0, 0);
+    // Yoke bracket linking the slider arm to the cup.
+    const yoke = new THREE.Mesh(
+      new THREE.BoxGeometry(0.06, 0.12, 0.07),
+      metalMaterial
+    );
+    yoke.position.set(0, 0.36, -0.01);
+    cupGroup.add(yoke);
+
+    // Small control buttons and a 3.5mm jack on the lower outer edge.
+    const createButton = (zOffset: number) => {
+      const button = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.014, 0.014, 0.016, 12),
+        metalMaterial
+      );
+      button.rotation.z = Math.PI / 2;
+      button.position.set(inward * 0.105, -0.2, zOffset);
+      return button;
+    };
+    cupGroup.add(createButton(0.1));
+    cupGroup.add(createButton(0.055));
+
+    const jack = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.018, 0.018, 0.022, 12),
+      metalMaterial
+    );
+    jack.rotation.z = Math.PI / 2;
+    jack.position.set(inward * 0.105, -0.24, 0.0);
+    cupGroup.add(jack);
+
+    cupGroup.position.set(cupX, EYE_CENTER_Y, 0);
     return cupGroup;
   };
 
-  // Posicióna las orejeras en los lados (referido en el código original)
-  headphonesGroup.add(createEarCup(-0.42, true));
-  headphonesGroup.add(createEarCup(0.42, false));
+  // Posicióna las orejeras en los lados
+  headphonesGroup.add(createEarCup(-1, true));
+  headphonesGroup.add(createEarCup(1, false));
 
-  // Posicióna las orejas a la altura de las orejas del robot
-  headphonesGroup.position.set(0, 0.1, 0);
   return headphonesGroup;
 }
 
 function createHat(): THREE.Group {
   const group = new THREE.Group();
-  const hatMaterial = new THREE.MeshStandardMaterial({
-    color: 0xa855f7,
-    roughness: 0.35,
-    metalness: 0.2,
+
+  const knitTexture = createKnitTexture();
+  const labelTexture = createLabelTexture();
+
+  // Dark charcoal ribbed wool, matching the reference beanie.
+  const woolMaterial = new THREE.MeshStandardMaterial({
+    color: 0x3a3a40,
+    map: knitTexture,
+    bumpMap: knitTexture,
+    bumpScale: 0.06,
+    roughness: 0.95,
+    metalness: 0,
   });
-  const accentMaterial = new THREE.MeshStandardMaterial({
-    color: 0xfbbf24,
-    roughness: 0.2,
-    metalness: 0.8,
-    emissive: new THREE.Color(0xfbbf24),
-    emissiveIntensity: 0.5,
-  });
 
-  // Stylized cone crown above the head
-  const coneHeight = 0.6;
-  const coneRadius = 0.16;
-  const cone = new THREE.Mesh(new THREE.ConeGeometry(coneRadius, coneHeight, 16), hatMaterial);
-  cone.position.set(0, 0, 0);
-  group.add(cone);
+  // The knit follows the chosen accessory colour.
+  group.userData.tintMaterials = [woolMaterial];
 
-  // Stylized crown top sphere/crown accent
-  const crownSphere = new THREE.Mesh(new THREE.SphereGeometry(coneRadius * 0.5, 12, 8), hatMaterial);
-  crownSphere.position.set(0, coneHeight * 0.45, 0);
-  group.add(crownSphere);
+  // Everything is authored in head-local units and the whole beanie is squashed
+  // in Z to follow the head's width/depth ratio.
+  const shell = new THREE.Group();
+  shell.scale.z = HEAD_Z_RATIO;
 
-  // Golden accent ring around the cone base
-  const accentRing = new THREE.Mesh(new THREE.TorusGeometry(coneRadius * 1.1, 0.025, 8, 32), accentMaterial);
-  accentRing.position.set(0, 0, 0);
-  accentRing.rotation.x = Math.PI / 2;
-  group.add(accentRing);
+  // Folded-over cuff band at the bottom of the beanie (sits just above the brows).
+  const cuff = new THREE.Mesh(
+    new THREE.CylinderGeometry(1.12, 1.15, 0.32, 64, 1, true),
+    woolMaterial
+  );
+  cuff.position.y = 1.0;
+  shell.add(cuff);
 
-  // Floating ring above the crown (elegant accent)
-  const floatingRing = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.015, 8, 32), accentMaterial);
-  floatingRing.position.set(0, coneHeight * 0.95, 0);
-  group.add(floatingRing);
+  // Rounded top edge of the cuff so it does not read as a raw cylinder.
+  const cuffRim = new THREE.Mesh(
+    new THREE.TorusGeometry(1.12, 0.05, 12, 64),
+    woolMaterial
+  );
+  cuffRim.rotation.x = Math.PI / 2;
+  cuffRim.position.y = 1.16;
+  shell.add(cuffRim);
 
-  group.position.set(0, 1.25, 0);
+  // Crown: lathed dome tapering from the cuff to a soft peak above the head.
+  const crownProfile = [
+    new THREE.Vector2(1.1, 1.13),
+    new THREE.Vector2(1.03, 1.25),
+    new THREE.Vector2(0.92, 1.38),
+    new THREE.Vector2(0.78, 1.51),
+    new THREE.Vector2(0.62, 1.63),
+    new THREE.Vector2(0.44, 1.73),
+    new THREE.Vector2(0.24, 1.79),
+    new THREE.Vector2(0.0, 1.81),
+  ];
+  const crown = new THREE.Mesh(new THREE.LatheGeometry(crownProfile, 64), woolMaterial);
+  shell.add(crown);
+
+  // Slouched fold near the peak, matching the relaxed beanie silhouette.
+  const slouch = new THREE.Mesh(
+    new THREE.SphereGeometry(0.3, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.62),
+    woolMaterial
+  );
+  slouch.scale.set(1, 0.68, 1);
+  slouch.position.set(0, 1.7, 0.04);
+  shell.add(slouch);
+
+  group.add(shell);
+
+  // Cream leather patch label with the mountain emblem, on the front of the cuff.
+  const label = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.22, 0.22),
+    new THREE.MeshStandardMaterial({
+      map: labelTexture,
+      roughness: 0.72,
+      metalness: 0.02,
+    })
+  );
+  label.position.set(0, 1.0, 1.02);
+  group.add(label);
+
   return group;
 }
 
@@ -352,6 +684,21 @@ function resolveHeadphones(a: Accessories | undefined): boolean {
 
 function resolveHat(a: Accessories | undefined): boolean {
   return Boolean(a?.hat || a?.gorrito);
+}
+
+// Applies the user colour to the materials each accessory exposes on
+// `userData.tintMaterials`, remembering the last applied colour per group so
+// the render loop only touches materials when something actually changed.
+const appliedAccessoryTints = new WeakMap<THREE.Group, string>();
+function applyAccessoryTint(group: THREE.Group | null, color: string | undefined) {
+  if (!group || !color) return;
+  if (appliedAccessoryTints.get(group) === color) return;
+
+  const materials = group.userData.tintMaterials as THREE.MeshStandardMaterial[] | undefined;
+  if (!materials?.length) return;
+
+  materials.forEach((material) => material.color.set(color));
+  appliedAccessoryTints.set(group, color);
 }
 
 function createCyberEars(): THREE.Group {
@@ -434,6 +781,7 @@ export default function Avatar3D({
   className = '',
   variant: propVariant,
   accessories: propAccessories,
+  accessoryColors: propAccessoryColors,
   reactionState: propReaction,
   autoRotate = true,
   cameraPosition = [0, 0.8, 2.5],
@@ -447,18 +795,24 @@ export default function Avatar3D({
   // Use props if provided (for preview), otherwise fall back to context.
   const effectiveVariant = propVariant ?? settings.variant;
   const effectiveAccessories = propAccessories ?? settings.accessories;
+  const effectiveAccessoryColors = propAccessoryColors ?? settings.accessoryColors ?? DEFAULT_ACCESSORY_COLORS;
   const effectiveReaction = propReaction ?? mood;
   const variantRef = useRef(effectiveVariant);
   const accessoriesRef = useRef(effectiveAccessories);
+  const accessoryColorsRef = useRef(effectiveAccessoryColors);
   const moodRef = useRef(effectiveReaction);
 
-  const glassesRef = useRef<THREE.Group | null>(null);
-  const headphonesRef = useRef<THREE.Group | null>(null);
-  const hatRef = useRef<THREE.Group | null>(null);
+  const glassesGroupRef = useRef<THREE.Group | null>(null);
+  const headphonesGroupRef = useRef<THREE.Group | null>(null);
+  const hatGroupRef = useRef<THREE.Group | null>(null);
 
   useEffect(() => {
     settingsRef.current = settings;
   }, [settings]);
+
+  useEffect(() => {
+    accessoryColorsRef.current = effectiveAccessoryColors;
+  }, [effectiveAccessoryColors]);
 
   useEffect(() => {
     moodRef.current = effectiveReaction;
@@ -472,11 +826,11 @@ export default function Avatar3D({
     accessoriesRef.current = effectiveAccessories;
   }, [effectiveAccessories]);
 
-  // Reactive visibility sync for accessory groups
+  // Reactive visibility sync for accessory groups.
   useEffect(() => {
-    if (hatRef.current) hatRef.current.visible = resolveHat(effectiveAccessories);
-    if (glassesRef.current) glassesRef.current.visible = resolveGlasses(effectiveAccessories);
-    if (headphonesRef.current) headphonesRef.current.visible = resolveHeadphones(effectiveAccessories);
+    if (hatGroupRef.current) hatGroupRef.current.visible = resolveHat(effectiveAccessories);
+    if (glassesGroupRef.current) glassesGroupRef.current.visible = resolveGlasses(effectiveAccessories);
+    if (headphonesGroupRef.current) headphonesGroupRef.current.visible = resolveHeadphones(effectiveAccessories);
   }, [effectiveAccessories]);
 
   useEffect(() => {
@@ -520,21 +874,6 @@ export default function Avatar3D({
     controls.maxDistance = 4.0;
     if (!interactive) controls.enabled = false;
 
-    // TransformControls for dragging accessories
-    const transformControls = new TransformControls(camera, renderer.domElement);
-    if (glassesRef.current) transformControls.attach(glassesRef.current);
-    else if (headphonesRef.current) transformControls.attach(headphonesRef.current);
-    else if (hatRef.current) transformControls.attach(hatRef.current);
-    transformControls.mode = 'translate';
-    transformControls.enabled = !!glassesRef.current || !!headphonesRef.current || !!hatRef.current;
-    transformControls.setTranslationSnap(0.01);
-    transformControls.space = 'world';
-    renderer.domElement.addEventListener('click', () => {
-      if (glassesRef.current) transformControls.attach(glassesRef.current);
-      else if (headphonesRef.current) transformControls.attach(headphonesRef.current);
-      else if (hatRef.current) transformControls.attach(hatRef.current);
-    });
-
     const ambient = new THREE.AmbientLight(0xffffff, 0.8);
     scene.add(ambient);
 
@@ -549,7 +888,12 @@ export default function Avatar3D({
     const holder = new THREE.Group();
     scene.add(holder);
 
-    const materials = new Set<THREE.MeshStandardMaterial>();
+    // The hat is built up front so it exists as soon as the model streams in.
+    // It stays hidden until the head node is available, at which point it is
+    // reparented into the head's local space.
+    hatGroupRef.current = createHat();
+    hatGroupRef.current.visible = false;
+
     const shellMaterials = new Set<THREE.MeshStandardMaterial>();
     const accentMaterials = new Set<THREE.MeshStandardMaterial>();
     let shellMaterial: THREE.MeshStandardMaterial | null = null;
@@ -569,21 +913,18 @@ export default function Avatar3D({
     let rightHappyEye: THREE.Object3D | null = null;
     let winkEye: THREE.Object3D | null = null;
 
-    // Accessory refs
-    let glassesGroup: THREE.Group | null = null;
-    let headphonesGroup: THREE.Group | null = null;
-    let hatGroup: THREE.Group | null = null;
-    let cyberEarsGroup: THREE.Group | null = null;
-    let accessoryMeshes: { name: string; mesh: THREE.Mesh }[] = [];
-    let earGlowMaterials: THREE.MeshStandardMaterial[] = [];
-    let earShellMaterials: THREE.MeshStandardMaterial[] = [];
-    let currentVariant = variantRef.current;
+    const materials = new Set<THREE.MeshStandardMaterial>();
     const currentAccessories = {
       glasses: resolveGlasses(accessoriesRef.current),
       headphones: resolveHeadphones(accessoriesRef.current),
       hat: resolveHat(accessoriesRef.current),
     };
     const headBaseScale = new THREE.Vector3(1, 1, 1);
+    let cyberEarsGroup: THREE.Group | null = null;
+    const accessoryMeshes: { name: string; mesh: THREE.Mesh }[] = [];
+    let earGlowMaterials: THREE.MeshStandardMaterial[] = [];
+    let earShellMaterials: THREE.MeshStandardMaterial[] = [];
+    let currentVariant = variantRef.current;
 
     const registerEarMaterials = (ears: THREE.Group) => {
       const glow = ears.userData.glowMaterial as THREE.MeshStandardMaterial | undefined;
@@ -759,23 +1100,23 @@ export default function Avatar3D({
           headBaseScale.copy(headNode.scale);
         }
 
-        // Attach accessories directly to the scene holder (not the head node)
-// so they don't depend on head tracking and use absolute positioning.
-      if (currentAccessories.glasses && !glassesGroup) {
-        glassesGroup = createGlasses();
-        glassesRef.current = glassesGroup;
-        holder.add(glassesGroup);
-      }
-      if (currentAccessories.headphones && !headphonesGroup) {
-        headphonesGroup = createHeadphones();
-        headphonesRef.current = headphonesGroup;
-        holder.add(headphonesGroup);
-      }
-      if (currentAccessories.hat && !hatGroup) {
-        hatGroup = createHat();
-        hatRef.current = hatGroup;
-        holder.add(hatGroup);
-      }
+        // Accessories are authored in head-local units and parented to the head
+        // node so they inherit the model scale, its centering transform and the
+        // head's lean. They are built regardless of the toggle state so enabling
+        // one later simply flips visibility instead of building nothing.
+        if (headNode) {
+          if (!hatGroupRef.current) hatGroupRef.current = createHat();
+          if (!glassesGroupRef.current) glassesGroupRef.current = createGlasses();
+          if (!headphonesGroupRef.current) headphonesGroupRef.current = createHeadphones();
+
+          hatGroupRef.current.visible = resolveHat(accessoriesRef.current);
+          glassesGroupRef.current.visible = resolveGlasses(accessoriesRef.current);
+          headphonesGroupRef.current.visible = resolveHeadphones(accessoriesRef.current);
+
+          headNode.add(hatGroupRef.current);
+          headNode.add(glassesGroupRef.current);
+          headNode.add(headphonesGroupRef.current);
+        }
 
         // Procedural cyber-cat ears are created once and mounted on the head
         // (falling back to the robot root) so the active variant can simply
@@ -970,9 +1311,15 @@ export default function Avatar3D({
       // Sync accessory changes - just toggle visibility via refs
       const nextAccessories = accessoriesRef.current;
 
-      if (glassesRef.current) glassesRef.current.visible = resolveGlasses(nextAccessories);
-      if (headphonesRef.current) headphonesRef.current.visible = resolveHeadphones(nextAccessories);
-      if (hatRef.current) hatRef.current.visible = resolveHat(nextAccessories);
+      if (glassesGroupRef.current) glassesGroupRef.current.visible = resolveGlasses(nextAccessories);
+      if (headphonesGroupRef.current) headphonesGroupRef.current.visible = resolveHeadphones(nextAccessories);
+      if (hatGroupRef.current) hatGroupRef.current.visible = resolveHat(nextAccessories);
+
+      // Live-tint the accessory materials whenever the palette changes.
+      const nextColors = accessoryColorsRef.current;
+      applyAccessoryTint(glassesGroupRef.current, nextColors.glasses);
+      applyAccessoryTint(headphonesGroupRef.current, nextColors.headphones);
+      applyAccessoryTint(hatGroupRef.current, nextColors.hat);
 
       // Sync cyber-cat ears: create once, then just toggle visibility so the
       // switch is instant and allocation-free.
@@ -1074,16 +1421,6 @@ export default function Avatar3D({
 
       baseRing.rotation.z += delta * 0.12;
       controls.update();
-      if (effectiveAccessories.hat && hatRef.current) {
-        transformControls.attach(hatRef.current);
-      } else if (effectiveAccessories.glasses && glassesRef.current) {
-        transformControls.attach(glassesRef.current);
-      } else if (effectiveAccessories.headphones && headphonesRef.current) {
-        transformControls.attach(headphonesRef.current);
-      } else {
-        transformControls.detach();
-      }
-      transformControls.update(delta);
       renderer.render(scene, camera);
     };
 
@@ -1123,7 +1460,6 @@ export default function Avatar3D({
       glowTexture.dispose();
       starTexture.dispose();
       renderer.dispose();
-      transformControls.dispose();
       if (renderer.domElement.parentNode === container) container.removeChild(renderer.domElement);
     };
   }, [interactive, compact]);

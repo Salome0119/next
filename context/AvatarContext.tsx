@@ -22,11 +22,18 @@ export interface AvatarAccessories {
   hat: boolean;
 }
 
+export interface AvatarAccessoryColors {
+  glasses: string;
+  headphones: string;
+  hat: string;
+}
+
 export interface AvatarSettings {
   enabled: boolean;
   personality: AvatarPersonality;
   variant: AvatarVariant;
   accessories: AvatarAccessories;
+  accessoryColors: AvatarAccessoryColors;
   accentColor: string;
   eyeColor: string;
   bodyTone: string;
@@ -98,6 +105,11 @@ export const DEFAULT_AVATAR_SETTINGS: AvatarSettings = {
     headphones: false,
     hat: false,
   },
+  accessoryColors: {
+    glasses: '#2a2f38',
+    headphones: '#26282e',
+    hat: '#3a3a40',
+  },
   accentColor: '#a855f7',
   eyeColor: '#f472b6',
   bodyTone: '#fdfbf7',
@@ -129,6 +141,17 @@ function sanitizeSettings(value: unknown): AvatarSettings {
     personality,
     variant,
     accessories,
+    accessoryColors: {
+      glasses: isHexColor(candidate.accessoryColors?.glasses)
+        ? candidate.accessoryColors!.glasses
+        : DEFAULT_AVATAR_SETTINGS.accessoryColors.glasses,
+      headphones: isHexColor(candidate.accessoryColors?.headphones)
+        ? candidate.accessoryColors!.headphones
+        : DEFAULT_AVATAR_SETTINGS.accessoryColors.headphones,
+      hat: isHexColor(candidate.accessoryColors?.hat)
+        ? candidate.accessoryColors!.hat
+        : DEFAULT_AVATAR_SETTINGS.accessoryColors.hat,
+    },
     accentColor: isHexColor(candidate.accentColor) ? candidate.accentColor : DEFAULT_AVATAR_SETTINGS.accentColor,
     eyeColor: isHexColor(candidate.eyeColor) ? candidate.eyeColor : DEFAULT_AVATAR_SETTINGS.eyeColor,
     bodyTone: isHexColor(candidate.bodyTone) ? candidate.bodyTone : DEFAULT_AVATAR_SETTINGS.bodyTone,
