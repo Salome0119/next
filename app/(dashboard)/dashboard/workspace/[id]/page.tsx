@@ -1,5 +1,6 @@
 import { getWorkspaceMembers } from '@/app/actions/workspace-actions';
 import { getTareas } from '@/app/actions';
+import { getWorkspaceById } from '@/lib/workspace-db';
 import { WorkspaceDashboardClient } from '@/components/WorkspaceDashboardClient';
 import { notFound } from 'next/navigation';
 
@@ -15,10 +16,17 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
     notFound();
   }
 
+  let workspace;
   let tasksData;
   let membersData;
 
   try {
+    workspace = await getWorkspaceById(workspaceId);
+
+    if (!workspace) {
+      notFound();
+    }
+
     const [tasksResult, membersResult] = await Promise.all([
       getTareas(1, 50, workspaceId),
       getWorkspaceMembers(workspaceId),
@@ -31,7 +39,7 @@ export default async function WorkspacePage({ params }: WorkspacePageProps) {
     notFound();
   }
 
-  if (!tasksData || !membersData) {
+  if (!workspace || !tasksData || !membersData) {
     notFound();
   }
 

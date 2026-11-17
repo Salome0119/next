@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { InviteMemberModal } from './InviteMemberModal';
 import { logoutAction } from '@/app/actions/auth-actions';
@@ -80,7 +81,7 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
         <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-6 py-3.5 flex items-center justify-between">
           <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
             <Link href="/dashboard" className="flex items-center gap-2 text-xl font-heading font-bold text-gradient-primary tracking-tight" aria-label="PlanAI - Inicio">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-lg">P</span>
+              <Logo size={32} priority />
               <span>PlanAI</span>
             </Link>
             <div className="flex items-center gap-1 hidden md:flex bg-slate-100/80 dark:bg-slate-900/80 border border-slate-200 dark:border-slate-800/80 p-1 rounded-xl shadow-inner">
@@ -106,7 +107,7 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
             className="flex items-center gap-2 text-xl font-heading font-bold text-gradient-primary tracking-tight"
             aria-label="PlanAI - Inicio"
           >
-            <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-lg">P</span>
+            <Logo size={32} priority />
             <span>PlanAI</span>
           </Link>
 

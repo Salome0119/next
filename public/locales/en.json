@@ -207,23 +207,26 @@
       "sessionsRevoked": "Sessions closed on other devices"
     },
     "aiUsage": {
-      "title": "AI Usage & Metrics",
-      "subtitle": "Monitor your token usage and generation history",
-      "metricsTitle": "AI Metrics",
-      "monthLabel": "Month",
-      "limit": "Limit",
-      "tokensUsed": "Tokens Used",
-      "generations": "Generations",
-      "tokensRemaining": "Tokens Remaining",
-      "monthlyUsage": "Monthly Usage",
-      "recentHistory": "Recent History",
-      "noHistory": "No generation history",
-      "promptPreview": "Prompt",
-      "date": "Date",
-      "tokens": "tokens",
-      "model": "Model",
-      "retry": "Retry",
-      "errorLoading": "Error loading AI usage data"
+      "title": "AI Usage",
+      "subtitle": "Monitor your AI credit consumption",
+      "monthlyUsage": "Monthly usage",
+      "creditsUsed": "Credits used",
+      "creditsRemaining": "Credits remaining",
+      "generationsRealized": "Generations made",
+      "resetDate": "Reset date",
+      "usageHistory": "Usage history",
+      "noUsage": "No usage recorded this month",
+      "noUsageDesc": "Your AI activity will appear here automatically.",
+      "detailTitle": "Generation Details",
+      "promptLabel": "Title / Action",
+      "viewDetails": "View details of",
+      "dateTime": "Date & Time",
+      "modelLabel": "AI Model",
+      "tokensConsumed": "Tokens Consumed",
+      "aiResponse": "AI Response",
+      "copyPrompt": "Copy action",
+      "close": "Close",
+      "noResponse": "No response available for this generation."
     },
     "account": {
       "title": "Account Management",
@@ -284,35 +287,42 @@
       "noPermission": "You don't have permission to manage this workspace. Contact the owner or admin."
     },
     "invite": {
-      "title": "Invite Member",
-      "subtitle": "Add a new member to this workspace",
-      "emailLabel": "Member Email",
+      "title": "Invite member to the workspace",
+      "subtitle": "Send an email invitation to collaborate in this space.",
+      "emailLabel": "Email address",
       "emailPlaceholder": "user@example.com",
-      "roleLabel": "Role",
-      "roleAdmin": "Admin",
-      "roleAdminDesc": "Can manage members and tasks",
+      "roleLabel": "Member role",
+      "roleAdmin": "Administrator",
+      "roleAdminDesc": "Can manage members and settings",
       "roleMember": "Member",
-      "roleMemberDesc": "Access to tasks and collaboration",
+      "roleMemberDesc": "Can view and edit workspace tasks",
       "sending": "Sending...",
-      "sendInvitation": "Send Invitation",
-      "invitationSent": "Invitation Sent",
+      "sendInvitation": "Send invitation",
+      "invitationSent": "Invitation sent",
       "invitationSentDesc": "The invitation has been sent to the email address provided"
     }
   },
   "onboarding": {
-    "welcome": "Welcome to PlanAI! 🎉",
-    "welcomeDesc": "Let's take a quick tour of the platform.",
+    "welcome": "Welcome to PlanAI!",
+    "welcomeDesc": "This is your smart space to organize tasks, collaborate in teams, and boost your productivity with AI.",
     "quickTask": {
-      "title": "Quick New Task",
-      "desc": "Write your task here and press Enter to create it instantly."
-    },
-    "workspace": {
-      "title": "Workspaces",
-      "desc": "Switch between your workspaces easily from here."
+      "title": "Task Creation & Management",
+      "desc": "Add quick tasks, assign priority, tags and due dates intuitively."
     },
     "aiGenerator": {
       "title": "AI Generator",
-      "desc": "Generate structured plans and documents automatically."
+      "desc": "Use our built-in AI to extract tasks from documents, generate summaries or draft content automatically."
+    },
+    "workspace": {
+      "title": "Workspaces",
+      "desc": "Switch between your workspaces or invite collaborators to work as a team."
+    },
+    "navigation": {
+      "previous": "Back",
+      "next": "Next",
+      "finish": "Finish",
+      "progress": "{{current}} of {{total}}",
+      "close": "Close guide"
     }
   },
   "generador": {

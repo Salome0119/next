@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { getUserWorkspaces } from '@/app/actions/workspace-actions';
-import { switchWorkspaceAction } from '@/app/actions/workspace-session';
+import { setWorkspaceSession } from '@/app/actions/workspace-session';
 
 interface Workspace {
   id: number;
@@ -16,44 +17,89 @@ interface Workspace {
 }
 
 export function WorkspaceSelector() {
-  const { data: session, update } = useSession();
+  const pathname = usePathname();
+  const router = useRouter();
+  const { data: session, update: updateSession } = useSession();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [switching, setSwitching] = useState<number | null>(null);
-  const currentWorkspaceId = (session?.user as { workspaceId?: number } | undefined)?.workspaceId;
-
-  const loadWorkspaces = async () => {
-    try {
-      const data = await getUserWorkspaces();
-      setWorkspaces(data);
-    } catch (error) {
-      console.error('Error loading workspaces:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const syncedRouteIdRef = useRef<number | null>(null);
+  const sessionWorkspaceId = (session?.user as { workspaceId?: number } | undefined)?.workspaceId;
+  const routeWorkspaceId = Number(pathname.match(/^\/dashboard\/workspace\/(\d+)/)?.[1]) || null;
+  const activeWorkspaceId = routeWorkspaceId ?? sessionWorkspaceId;
 
   useEffect(() => {
+    const loadWorkspaces = async () => {
+      try {
+        const data = await getUserWorkspaces();
+        setWorkspaces(data);
+      } catch (error) {
+        console.error('Error loading workspaces:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     loadWorkspaces();
-  }, []);
+  }, [activeWorkspaceId]);
+
+  useEffect(() => {
+    if (!routeWorkspaceId || syncedRouteIdRef.current === routeWorkspaceId) return;
+
+    if (sessionWorkspaceId === routeWorkspaceId) {
+      syncedRouteIdRef.current = routeWorkspaceId;
+      return;
+    }
+
+    syncedRouteIdRef.current = routeWorkspaceId;
+    let cancelled = false;
+
+    const syncActiveWorkspace = async () => {
+      try {
+        await setWorkspaceSession(routeWorkspaceId);
+        if (!cancelled) {
+          await updateSession({ workspaceId: routeWorkspaceId });
+          router.refresh();
+        }
+      } catch (error) {
+        syncedRouteIdRef.current = null;
+        if (!cancelled) {
+          console.error('Error syncing active workspace:', error);
+        }
+      }
+    };
+
+    syncActiveWorkspace();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [routeWorkspaceId, sessionWorkspaceId, updateSession, router]);
 
   const handleSwitchWorkspace = async (workspaceId: number) => {
-    if (workspaceId === currentWorkspaceId) {
+    if (routeWorkspaceId === workspaceId) {
       setIsOpen(false);
       return;
     }
+
     setSwitching(workspaceId);
     setIsOpen(false);
+
     try {
-      await switchWorkspaceAction(workspaceId);
+      await setWorkspaceSession(workspaceId);
+      await updateSession({ workspaceId });
+      syncedRouteIdRef.current = workspaceId;
+      router.refresh();
+      router.push(`/dashboard/workspace/${workspaceId}`);
     } catch (error) {
       console.error('Error switching workspace:', error);
+    } finally {
       setSwitching(null);
     }
   };
 
-  const currentWorkspace = workspaces.find(w => w.id === currentWorkspaceId);
+  const currentWorkspace = workspaces.find(w => w.id === activeWorkspaceId);
   
   if (loading) return null;
 
@@ -90,7 +136,7 @@ export function WorkspaceSelector() {
                       onClick={() => handleSwitchWorkspace(workspace.id)}
                       disabled={switching === workspace.id}
                       className={`w-full px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 transition-colors ${
-                        workspace.id === currentWorkspaceId
+                        workspace.id === activeWorkspaceId
                           ? 'bg-blue-500/10 text-blue-300 border border-blue-500/20'
                           : 'text-slate-300 hover:bg-slate-800 hover:text-white'
                       } ${switching === workspace.id ? 'opacity-50 cursor-wait' : ''}`}
@@ -100,7 +146,7 @@ export function WorkspaceSelector() {
                         <p className="font-medium truncate">{workspace.name}</p>
                         <p className="text-xs text-slate-500 capitalize">{workspace.user_role}</p>
                       </div>
-                      {workspace.id === currentWorkspaceId && (
+                      {workspace.id === activeWorkspaceId && (
                         <svg className="w-4 h-4 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                         </svg>
@@ -112,7 +158,10 @@ export function WorkspaceSelector() {
                   ))}
                   <hr className="my-2 border-slate-700" />
                   <button
-                    onClick={() => window.location.href = '/dashboard/workspace/new'}
+                    onClick={() => {
+                      setIsOpen(false);
+                      router.push('/dashboard/workspace/new');
+                    }}
                     className="w-full px-3 py-2.5 rounded-lg text-sm flex items-center gap-3 text-blue-400 hover:bg-slate-800 transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -85,7 +85,7 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">{t('workspace.invite.roleLabel')}</label>
               <div className="grid grid-cols-2 gap-3">
-                <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all cursor-pointer ${
+                <label className={`flex items-center gap-2 p-3.5 rounded-xl border transition-all cursor-pointer overflow-hidden text-left ${
                   role === 'admin'
                     ? 'border-blue-500 bg-blue-500/10'
                     : 'border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
@@ -98,15 +98,15 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
                     onChange={() => setRole('admin')}
                     className="sr-only"
                   />
-                  <div className="flex-1 text-center">
-                    <p className="font-medium text-slate-100 flex items-center justify-center gap-1.5">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                      {t('workspace.invite.roleAdmin')}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-semibold text-slate-100 flex items-center gap-1.5 break-words">
+                      <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                      <span>{t('workspace.invite.roleAdmin')}</span>
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">{t('workspace.invite.roleAdminDesc')}</p>
+                    <p className="text-xs text-slate-400 leading-snug mt-1 break-words">{t('workspace.invite.roleAdminDesc')}</p>
                   </div>
                 </label>
-                <label className={`flex items-center gap-2 px-4 py-3 rounded-xl border transition-all cursor-pointer ${
+                <label className={`flex items-center gap-2 p-3.5 rounded-xl border transition-all cursor-pointer overflow-hidden text-left ${
                   role === 'member'
                     ? 'border-emerald-500 bg-emerald-500/10'
                     : 'border-slate-700/50 hover:border-slate-600 hover:bg-slate-800/50'
@@ -119,12 +119,12 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
                     onChange={() => setRole('member')}
                     className="sr-only"
                   />
-                  <div className="flex-1 text-center">
-                    <p className="font-medium text-slate-100 flex items-center justify-center gap-1.5">
-                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
-                      {t('workspace.invite.roleMember')}
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-sm font-semibold text-slate-100 flex items-center gap-1.5 break-words">
+                      <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" /></svg>
+                      <span>{t('workspace.invite.roleMember')}</span>
                     </p>
-                    <p className="text-xs text-slate-500 mt-0.5">{t('workspace.invite.roleMemberDesc')}</p>
+                    <p className="text-xs text-slate-400 leading-snug mt-1 break-words">{t('workspace.invite.roleMemberDesc')}</p>
                   </div>
                 </label>
               </div>
@@ -134,7 +134,7 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
               <button
                 type="submit"
                 disabled={loading || !email.trim()}
-                className="flex-1 py-3 px-4 bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-400 hover:to-indigo-400 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
+                className="flex-1 py-3 px-4 bg-purple-600 hover:bg-purple-500 disabled:bg-slate-700 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-medium rounded-xl transition-all duration-200 flex items-center justify-center gap-2"
               >
                 {loading ? (
                   <>

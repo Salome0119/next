@@ -3,8 +3,9 @@
 import sql from '@/lib/db';
 import { revalidatePath } from 'next/cache';
 import { auth } from '@/auth';
-import { redirect } from 'next/navigation';
 import { sendInvitationEmail } from '@/lib/email';
+import type { Workspace } from '@/lib/workspace-db';
+import { setWorkspaceSession } from '@/app/actions/workspace-session';
 import {
   createWorkspaceSchema,
   inviteMemberSchema,
@@ -32,15 +33,15 @@ async function getUserRoleInWorkspace(workspaceId: number, userId: number): Prom
   return (result[0]?.role as 'owner' | 'admin' | 'member') || null;
 }
 
-export async function createWorkspace(name: string, description?: string): Promise<ActionResult<{ id: number }>> {
+export async function createWorkspace(name: string, description?: string): Promise<ActionResult<Workspace>> {
   const userId = await getCurrentUserId();
   if (!userId) {
-    return createActionError<{ id: number }>('Debes iniciar sesión para crear un workspace');
+    return createActionError<Workspace>('Debes iniciar sesión para crear un workspace');
   }
 
   const validation = createWorkspaceSchema.safeParse({ name, description });
   if (!validation.success) {
-    return createValidationErrorResult(formatZodError(validation.error));
+    return createValidationErrorResult<Workspace>(formatZodError(validation.error));
   }
 
   try {
@@ -49,20 +50,22 @@ export async function createWorkspace(name: string, description?: string): Promi
       VALUES (${validation.data.name}, ${validation.data.description || null}, ${userId})
       RETURNING *
     `;
-    const workspace = workspaces[0];
+    const workspace = workspaces[0] as Workspace;
 
     await sql`
       INSERT INTO workspace_members (workspace_id, user_id, role)
       VALUES (${workspace.id}, ${userId}, 'owner')
     `;
 
+    await setWorkspaceSession(workspace.id);
+
     revalidatePath('/dashboard');
     revalidatePath(`/dashboard/workspace/${workspace.id}`);
 
-    return createActionSuccess({ id: workspace.id });
+    return createActionSuccess<Workspace>(workspace);
   } catch (error) {
     console.error('[CREATE WORKSPACE ERROR]', error);
-    return createActionError<{ id: number }>('Error al crear el workspace. Inténtalo de nuevo.');
+    return createActionError<Workspace>('Error al crear el workspace. Inténtalo de nuevo.');
   }
 }
 

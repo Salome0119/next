@@ -7,6 +7,7 @@ import { AvatarProvider } from '@/context/AvatarContext';
 import { ThemeProvider } from '@/app/providers';
 import Script from 'next/script';
 import "./globals.css";
+import "./onboarding-tour.css";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -39,9 +40,9 @@ export const metadata: Metadata = {
     type: "website",
   },
   icons: {
-    icon: "/file.svg",
-    shortcut: "/file.svg",
-    apple: "/file.svg",
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
   },
 };
 

@@ -3,6 +3,7 @@
 import { useState, FormEvent, Suspense } from 'react';
 import { signIn } from 'next-auth/react';
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Mail,
@@ -126,7 +127,7 @@ function LoginForm() {
         
         <div className="relative z-10">
           <Link href="/" className="inline-flex items-center gap-3 text-3xl font-heading font-bold text-gradient-primary tracking-tight mb-8">
-            <span className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-2xl">P</span>
+            <Logo size={56} priority />
             <span className="bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">PlanAI</span>
           </Link>
         </div>
@@ -162,7 +163,7 @@ function LoginForm() {
           {/* Header */}
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-3 text-3xl font-heading font-bold text-gradient-primary tracking-tight mb-6">
-              <span className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-xl">P</span>
+              <Logo size={48} priority />
               <span className="bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">PlanAI</span>
             </Link>
             <h1 className="text-2xl font-heading font-semibold mb-2 bg-gradient-to-r from-white to-slate-300 bg-clip-text text-transparent">

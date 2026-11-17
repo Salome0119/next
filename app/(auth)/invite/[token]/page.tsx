@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import { signIn, signOut } from 'next-auth/react';
 import { acceptInvitation } from '@/app/actions/invitation-actions';
 
@@ -111,7 +112,7 @@ export default function InvitePage() {
         <div className="max-w-md w-full bg-slate-900/80 border border-slate-800 rounded-2xl p-8 shadow-2xl backdrop-blur-xl text-center space-y-6 animate-fade-in">
           <div className="pt-2">
             <Link href="/dashboard" className="inline-flex items-center gap-2 text-2xl font-heading font-bold text-gradient-primary tracking-tight">
-              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-xl">P</span>
+              <Logo size={40} priority />
               <span>PlanAI</span>
             </Link>
           </div>

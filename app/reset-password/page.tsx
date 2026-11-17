@@ -3,6 +3,7 @@
 import { useState, FormEvent, Suspense } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import { Loader2, AlertCircle, CheckCircle2, Eye, EyeOff, Lock } from 'lucide-react';
 import { resetPasswordAction } from '@/app/actions/auth-actions';
 import { useGlobalToast, useActionError } from '@/components/ui/useToast';
@@ -145,7 +146,7 @@ function ResetPasswordForm() {
         <div className="card-glass p-8 animate-fade-in">
           <div className="text-center mb-8">
             <Link href="/" className="inline-flex items-center gap-2 text-2xl font-heading font-bold text-gradient-primary tracking-tight mb-6">
-              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-500 flex items-center justify-center text-white font-heading font-bold text-xl">P</span>
+              <Logo size={40} priority />
               <span>PlanAI</span>
             </Link>
             <h1 className="text-2xl font-heading font-semibold mt-6 mb-2">Restablecer contraseña</h1>

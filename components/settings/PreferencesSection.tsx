@@ -361,18 +361,18 @@ export function PreferencesSection() {
                 <button
                   type="button"
                   onClick={() => handleChange(key, !preferences[key])}
-                  className={`relative w-12 h-7 rounded-full transition-colors ${
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out ${
                     preferences[key]
-                      ? 'bg-violet-500 border-violet-500'
-                      : 'bg-muted border-border dark:bg-slate-700 dark:border-slate-600'
+                      ? 'border-transparent bg-violet-500'
+                      : 'border-border bg-muted dark:border-slate-600 dark:bg-slate-700'
                   }`}
                   role="switch"
                   aria-checked={preferences[key]}
                   aria-label={t(labelKey)}
                 >
                   <span
-                    className={`absolute top-0.5 transition-transform duration-200 w-6 h-6 rounded-full bg-white shadow-md ${
-                      preferences[key] ? 'translate-x-5' : 'translate-x-0.5'
+                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${
+                      preferences[key] ? 'translate-x-5' : 'translate-x-0'
                     }`}
                     aria-hidden="true"
                   />

@@ -1,33 +1,44 @@
 'use client';
 
 import { useState, FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { createWorkspace } from '@/app/actions/workspace-actions';
+import { Logo } from '@/components/Logo';
 import Link from 'next/link';
 
 export default function NewWorkspacePage() {
+  const router = useRouter();
+  const { update: updateSession } = useSession();
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!name.trim() || loading) return;
+    if (!name.trim() || isSubmitting) return;
 
-    setLoading(true);
+    setIsSubmitting(true);
     setError('');
 
     try {
-      await createWorkspace(name.trim(), description.trim() || undefined);
-    } catch (err) {
-      if (err instanceof Error && err.message === 'NEXT_REDIRECT') {
-        throw err;
+      const result = await createWorkspace(name.trim(), description.trim() || undefined);
+
+      if (!result.success || !result.data?.id) {
+        setError(result.error ?? result.errors?.[0]?.message ?? 'Error al crear el workspace. Inténtalo de nuevo.');
+        return;
       }
+
+      await updateSession({ workspaceId: result.data.id });
+      router.refresh();
+      router.push(`/dashboard/workspace/${result.data.id}`);
+    } catch (err) {
       if (err instanceof Error) {
         setError(err.message);
       }
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
@@ -37,7 +48,7 @@ export default function NewWorkspacePage() {
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm animate-fade-in">
           <div className="text-center mb-8">
             <Link href="/dashboard" className="inline-flex items-center gap-2 text-2xl font-heading font-bold tracking-tight mb-6">
-              <span className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-xl">P</span>
+              <Logo size={40} priority />
               <span>PlanAI</span>
             </Link>
             <h1 className="text-2xl font-heading font-semibold mb-2">Crear nuevo workspace</h1>
@@ -88,10 +99,10 @@ export default function NewWorkspacePage() {
 
             <button
               type="submit"
-              disabled={loading || !name.trim()}
+              disabled={isSubmitting || !name.trim()}
               className="w-full btn-primary justify-center"
             >
-              {loading ? (
+              {isSubmitting ? (
                 <>
                   <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent" />
                   Creando...
