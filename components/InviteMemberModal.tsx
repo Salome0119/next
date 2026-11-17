@@ -48,8 +48,8 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xl animate-fade-in">
-      <div className="w-full max-w-md glass-strong rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden animate-slide-in">
-        <div className="p-6 space-y-4">
+      <div className="w-[calc(100%-2rem)] max-w-lg mx-auto glass-strong rounded-2xl border border-slate-700/50 shadow-2xl overflow-hidden animate-slide-in">
+        <div className="p-4 sm:p-6 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-heading font-bold text-slate-100">{t('workspace.invite.title')}</h2>
             <button
@@ -84,7 +84,7 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
 
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">{t('workspace.invite.roleLabel')}</label>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <label className={`flex items-center gap-2 p-3.5 rounded-xl border transition-all cursor-pointer overflow-hidden text-left ${
                   role === 'admin'
                     ? 'border-blue-500 bg-blue-500/10'
@@ -130,7 +130,7 @@ export function InviteMemberModal({ workspaceId, isOpen, onClose, onSuccess }: I
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex flex-col gap-2 pt-2 sm:flex-row [&>button]:min-h-[44px]">
               <button
                 type="submit"
                 disabled={loading || !email.trim()}

@@ -315,12 +315,12 @@ function AiGenerationHistoryList({ history, t }: { history: AiGenerationHistory[
           aria-labelledby="ai-history-modal-title"
         >
           <div
-            className="relative w-full max-w-2xl h-fit max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-purple-400/40 bg-slate-900/90 backdrop-blur-xl shadow-2xl shadow-purple-600/20 animate-slide-up"
+            className="relative w-[calc(100%-2rem)] max-w-lg mx-auto h-fit max-h-[90vh] flex flex-col overflow-hidden rounded-2xl border border-purple-400/40 bg-slate-900/90 backdrop-blur-xl shadow-2xl shadow-purple-600/20 animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-purple-400/25" aria-hidden="true" />
 
-            <div className="relative flex items-center justify-between gap-4 border-b border-purple-400/20 bg-purple-500/5 px-5 py-4 sm:px-6">
+            <div className="relative flex items-center justify-between gap-4 border-b border-purple-400/20 bg-purple-500/5 px-4 py-4 sm:px-6">
               <h3 id="ai-history-modal-title" className="text-base sm:text-lg font-semibold text-slate-100 flex items-center gap-2">
                 <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/15 border border-purple-400/30">
                   <Cpu className="w-4 h-4 text-purple-300" aria-hidden="true" />
@@ -337,7 +337,7 @@ function AiGenerationHistoryList({ history, t }: { history: AiGenerationHistory[
               </button>
             </div>
 
-            <div className="relative flex-1 overflow-y-auto scrollbar-thin px-5 py-5 sm:px-6 space-y-5">
+            <div className="relative flex-1 overflow-y-auto scrollbar-thin px-4 py-4 sm:px-6 space-y-5">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-purple-300/80 mb-1.5">
                   {t('settings.aiUsage.promptLabel')}
@@ -381,7 +381,7 @@ function AiGenerationHistoryList({ history, t }: { history: AiGenerationHistory[
                 <p className="text-[11px] font-semibold uppercase tracking-widest text-purple-300/80">
                   {t('settings.aiUsage.aiResponse')}
                 </p>
-                <div className="rounded-xl border border-purple-400/20 bg-slate-950/70 max-h-[38vh] overflow-y-auto scrollbar-thin p-4 shadow-inner">
+                <div className="rounded-xl border border-purple-400/20 bg-slate-950/70 max-h-[38vh] overflow-x-auto overflow-y-auto scrollbar-thin p-4 shadow-inner">
                   {selectedItem.response ? (
                     <div className="font-sans text-sm text-slate-200 leading-relaxed space-y-3 break-words">
                       <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>

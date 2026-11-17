@@ -230,7 +230,7 @@ export default function TaskList({
   }
 
   return (
-    <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl space-y-4 animate-fade-in">
+    <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-xl space-y-4 animate-fade-in">
       <div className="flex items-center gap-3 text-xs font-medium text-slate-500 dark:text-slate-400 mb-6 bg-slate-100/60 dark:bg-slate-950/60 p-2.5 rounded-xl border border-slate-200/60 dark:border-slate-800/60 w-fit">
         <span className="flex items-center gap-1.5 text-emerald-400">
           <span className="w-2 h-2 rounded-full bg-emerald-400" aria-hidden="true"></span>

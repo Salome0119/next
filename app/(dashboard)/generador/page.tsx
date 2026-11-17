@@ -55,6 +55,10 @@ function normalizeMarkdownBlocks(text: string): string {
   return output.join('\n');
 }
 
+function cleanHistoryText(text: string): string {
+  return text.replace(/\*\*?/g, '').trim();
+}
+
 // Strips markdown emphasis asterisks (`**bold**`, `*italic*`) so the edit
 // textarea shows clean, editable text instead of raw markdown markers.
 function stripMarkdownAsterisks(text: string): string {
@@ -1311,13 +1315,14 @@ export default function GeneradorPage() {
       <div className="space-y-8">
         {/* Header */}
         <header className="mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="mb-4 flex flex-wrap items-center justify-start gap-3">
             <h1 className="text-2xl font-bold text-primary flex items-center gap-2">
               <span aria-hidden="true">🤖</span> {isEn ? "AI Automation" : "Automatización con IA"}
             </h1>
             <button
+              id="tour-history-btn"
               onClick={() => setShowHistory(!showHistory)}
-              className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-1.5"
+              className="min-h-[44px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 px-4 py-2 rounded-xl text-sm font-medium transition-colors shadow-sm flex items-center gap-1.5"
               aria-expanded={showHistory}
               aria-controls="history-panel"
             >
@@ -1530,9 +1535,9 @@ export default function GeneradorPage() {
         </div>
 
         {/* Unified Output Panel */}
-        <div ref={bottomPanelRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 shadow-xl space-y-6 mt-6">
+        <div ref={bottomPanelRef} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-8 shadow-xl space-y-6 mt-6">
           {/* Header: AI Response Title + Action Buttons */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-4">
+          <div id="tour-result-actions" className="flex flex-col gap-4 border-b border-slate-200/60 dark:border-slate-800/60 pb-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-600 dark:text-violet-400">
                 ✨
@@ -1546,7 +1551,7 @@ export default function GeneradorPage() {
               </div>
             </div>
             {/* Actions: Editar, Copiar, PDF, Word, Limpiar (Editar hidden while editing) */}
-            <div className="flex items-center gap-2 flex-wrap">
+            <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center [&>button]:min-h-[44px] [&>button]:justify-center">
               {!isEditing && (
                 <button
                   onClick={handleStartEdit}
@@ -1710,7 +1715,7 @@ return (
                   })}
                 </div>
             ) : resultado ? (
-              <div className="prose prose-slate dark:prose-invert max-w-none text-slate-700 dark:text-slate-300 text-sm leading-relaxed space-y-4 prose-headings:text-slate-900 dark:prose-headings:text-slate-100 prose-headings:font-semibold prose-headings:border-b prose-headings:border-slate-200 dark:prose-headings:border-slate-800/80 prose-headings:pb-2 prose-strong:text-purple-700 dark:prose-strong:text-purple-300 prose-strong:font-semibold prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5 prose-li:my-1 animate-fade-in">
+              <div className="prose prose-slate dark:prose-invert max-w-none overflow-x-auto break-words text-slate-700 dark:text-slate-300 text-sm leading-relaxed space-y-4 prose-pre:overflow-x-auto prose-table:block prose-table:max-w-full prose-table:overflow-x-auto prose-headings:text-slate-900 dark:prose-headings:text-slate-100 prose-headings:font-semibold prose-headings:border-b prose-headings:border-slate-200 dark:prose-headings:border-slate-800/80 prose-headings:pb-2 prose-strong:text-purple-700 dark:prose-strong:text-purple-300 prose-strong:font-semibold prose-ul:list-disc prose-ul:pl-5 prose-ol:list-decimal prose-ol:pl-5 prose-li:my-1 animate-fade-in">
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>{normalizeMarkdownBlocks(resultado)}</ReactMarkdown>
               </div>
             ) : history.length > 0 ? (
@@ -1736,7 +1741,7 @@ return (
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate" title={item.prompt}>{item.prompt}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" title={item.resultado}>{item.resultado}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" title={item.resultado}>{cleanHistoryText(item.resultado)}</p>
                         <p className="text-xs text-slate-500 dark:text-slate-500 mt-1">{item.timestamp.toLocaleTimeString()}</p>
                       </div>
                     </button>
@@ -1893,7 +1898,7 @@ return (
           aria-labelledby="file-preview-title"
         >
           <div
-            className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl w-full max-w-3xl max-h-[80vh] overflow-hidden animate-slide-up"
+            className="bg-white dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700 rounded-2xl w-[calc(100%-2rem)] max-w-3xl mx-auto max-h-[80vh] overflow-hidden animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700/50">
@@ -1946,7 +1951,7 @@ return (
 {/* Panel: Historial de Generaciones */}
       {showHistory ? (
         <div
-          className="fixed inset-0 z-50 flex items-end justify-end p-4 bg-black/30 animate-fade-in"
+          className="fixed inset-0 z-50 flex items-start justify-start p-4 pt-20 bg-black/30 animate-fade-in sm:px-6 sm:pt-24"
           onClick={() => setShowHistory(false)}
           role="dialog"
           aria-modal="true"
@@ -1954,7 +1959,7 @@ return (
         >
           <div
             id="history-panel"
-            className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl w-full max-w-md max-h-[70vh] animate-slide-up"
+            className="bg-white dark:bg-slate-900 text-slate-900 dark:text-slate-100 border border-slate-200 dark:border-slate-800 rounded-2xl w-[calc(100%-2rem)] max-w-md mx-auto max-h-[70vh] overflow-y-auto animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700/50">
@@ -2003,7 +2008,7 @@ return (
                         </div>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-slate-900 dark:text-slate-200 truncate" title={item.prompt}>{item.prompt}</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" title={item.resultado}>{item.resultado}</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 truncate" title={item.resultado}>{cleanHistoryText(item.resultado)}</p>
                           <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{item.timestamp.toLocaleTimeString()}</p>
                         </div>
                         <button

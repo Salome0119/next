@@ -403,15 +403,15 @@
       "show": "Consultar documento (RAG)"
     },
     "tour": {
-      "welcome": "🎉 ¡Bienvenido al Generador de IA!",
-      "welcomeDesc": "Te mostraremos cómo crear contenido y tareas con inteligencia artificial.",
+      "welcome": "Automatización con IA",
+      "welcomeDesc": "Bienvenida al centro de inteligencia artificial de PlanAI. Aquí puedes procesar texto y extraer valor automáticamente.",
       "presets": {
-        "title": "Prompts Rápidos",
-        "desc": "Usa estos botones para empezar rápido: extraer tareas, resumir, crear cronogramas o formatear para SmartPaste."
+        "title": "Modos de Generación",
+        "desc": "Selecciona accesos rápidos como 'Extraer Tareas', 'Resumen Ejecutivo' o 'Crear Cronograma' para ahorrar tiempo."
       },
       "prompt": {
-        "title": "Tu Instrucción a la IA",
-        "desc": "Escribe aquí qué quieres que genere la IA. Sé específico para mejores resultados. Presiona Enter para nueva línea, Ctrl+Enter para enviar."
+        "title": "Entrada de Datos",
+        "desc": "Pega o escribe el contenido, notas o documentos que deseas analizar y estructurar."
       },
       "file": {
         "title": "Adjuntar Documentos",
@@ -426,8 +426,8 @@
         "desc": "Selecciona un workspace y prioridad, luego haz clic en \"Crear Tarea en Workspace\" para guardar la respuesta como tarea accionable."
       },
       "result": {
-        "title": "Acciones del Resultado",
-        "desc": "Edita la respuesta, cópiala al portapapeles, o descárgala como PDF/Word."
+        "title": "Resultados y Exportación",
+        "desc": "Visualiza la respuesta con formato Markdown, cópiala o guárdala directamente como tarea en tu workspace."
       },
       "smartPaste": {
         "title": "Automatización Avanzada",

@@ -2,12 +2,13 @@
 
 import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Logo } from '@/components/Logo';
 import { WorkspaceSelector } from './WorkspaceSelector';
 import { InviteMemberModal } from './InviteMemberModal';
 import { logoutAction } from '@/app/actions/auth-actions';
 import { updateOnboardingStatus } from '@/app/actions/auth-actions';
-import { Users, LayoutDashboard, Zap, Settings } from 'lucide-react';
+import { Users, LayoutDashboard, Zap, Settings, Menu, X } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
 
 interface UserSession {
@@ -24,13 +25,15 @@ interface DashboardNavigationProps {
   pathname?: string;
 }
 
-export function DashboardNavigation({ session, pathname = '' }: DashboardNavigationProps) {
+export function DashboardNavigation({ session, pathname: pathnameProp = '' }: DashboardNavigationProps) {
+  const pathname = usePathname() || pathnameProp;
   const user = session?.user;
   const isWorkspaceRoute = pathname.startsWith('/dashboard/workspace/');
   const workspaceIdMatch = pathname.match(/^\/dashboard\/workspace\/(\d+)/);
   const currentWorkspaceId = workspaceIdMatch ? Number(workspaceIdMatch[1]) : null;
   const [isRestartingTour, setIsRestartingTour] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { t, isReady } = useTranslation();
 
@@ -78,7 +81,7 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
   if (!isReady) {
     return (
       <>
-        <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-6 py-3.5 flex items-center justify-between">
+        <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-4 sm:px-6 py-3 flex items-center justify-between">
           <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
             <Link href="/dashboard" className="flex items-center gap-2 text-xl font-heading font-bold text-gradient-primary tracking-tight" aria-label="PlanAI - Inicio">
               <Logo size={32} priority />
@@ -99,7 +102,7 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
 
   return (
     <>
-      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-6 py-3.5 flex items-center justify-between">
+      <nav className="sticky top-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-800/80 px-4 sm:px-6 py-3 flex items-center justify-between">
         <div className="max-w-5xl mx-auto w-full flex items-center justify-between">
           {/* Left: Logo PlanAI with link to Dashboard */}
           <Link
@@ -135,8 +138,19 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
             })}
           </div>
 
-{/* Right: Workspace Selector + Invite Button + Profile Menu */}
-          <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen((open) => !open)}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-700 bg-white/60 dark:bg-slate-900/70 text-slate-700 dark:text-slate-200 transition-colors hover:border-violet-400/60 md:hidden"
+            aria-label={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+            aria-expanded={mobileMenuOpen}
+            aria-controls="mobile-nav-panel"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" aria-hidden="true" /> : <Menu className="w-5 h-5" aria-hidden="true" />}
+          </button>
+
+          {/* Right: Workspace Selector + Invite Button + Profile Menu */}
+          <div className="hidden md:flex items-center gap-3">
             <WorkspaceSelector />
             {isWorkspaceRoute && currentWorkspaceId && (
               <button
@@ -248,10 +262,101 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
               )}
             </div>
           </div>
+        {mobileMenuOpen && (
+          <div
+            id="mobile-nav-panel"
+            className="absolute left-0 right-0 top-full z-50 md:hidden border-t border-slate-200 dark:border-slate-800/80 bg-white/95 dark:bg-[#0b0f19]/95 backdrop-blur-xl px-4 py-4 shadow-2xl space-y-3"
+          >
+            <div className="grid grid-cols-1 gap-1">
+              {centerNavItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`min-h-[44px] flex items-center gap-3 px-3 rounded-xl text-sm font-medium transition-colors ${
+                      isActive
+                        ? 'bg-violet-600 text-white shadow-md'
+                        : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70'
+                    }`}
+                    aria-current={isActive ? 'page' : undefined}
+                  >
+                    <Icon className="w-5 h-5" aria-hidden="true" />
+                    <span>{t(item.labelKey)}</span>
+                  </Link>
+                );
+              })}
+            </div>
+
+            <div className="border-t border-slate-200 dark:border-slate-800/80 pt-3">
+              <WorkspaceSelector />
+            </div>
+
+            {isWorkspaceRoute && currentWorkspaceId && (
+              <button
+                type="button"
+                onClick={() => {
+                  setShowInviteModal(true);
+                  setMobileMenuOpen(false);
+                }}
+                className="min-h-[44px] w-full flex items-center justify-center gap-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-sm font-medium shadow-sm transition-colors"
+              >
+                <Users className="w-4 h-4" aria-hidden="true" />
+                <span>{t('nav.inviteMember')}</span>
+              </button>
+            )}
+
+            {user && (
+              <div className="border-t border-slate-200 dark:border-slate-800/80 pt-3 space-y-1">
+                <div className="flex items-center gap-3 px-2 py-2">
+                  <span className="w-9 h-9 rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 flex items-center justify-center text-white text-sm font-medium">
+                    {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                  <span className="text-sm text-slate-800 dark:text-slate-200 truncate">{user.name || user.email}</span>
+                </div>
+                <Link
+                  href="/dashboard/settings"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="min-h-[44px] flex items-center gap-3 px-3 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70"
+                >
+                  <Settings className="w-5 h-5" aria-hidden="true" />
+                  {t('nav.accountSettings')}
+                </Link>
+                {user.hasCompletedOnboarding !== false && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleRestartTour();
+                      setMobileMenuOpen(false);
+                    }}
+                    disabled={isRestartingTour}
+                    className="min-h-[44px] w-full flex items-center gap-3 px-3 rounded-xl text-sm text-violet-500 dark:text-violet-400 hover:bg-violet-500/10 disabled:opacity-50"
+                  >
+                    <Zap className="w-5 h-5" aria-hidden="true" />
+                    {isRestartingTour ? t('common.loading') : t('nav.restartTour')}
+                  </button>
+                )}
+                <form action={logoutAction}>
+                  <button
+                    type="submit"
+                    className="min-h-[44px] w-full flex items-center gap-3 px-3 rounded-xl text-sm text-red-500 dark:text-red-400 hover:bg-red-500/10"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    {t('nav.logout')}
+                  </button>
+                </form>
+              </div>
+            )}
+          </div>
+        )}
         </nav>
 
         {/* Mobile Navigation - Executive Style */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800/80 pb-safe">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/80 dark:bg-[#0b0f19]/90 backdrop-blur-md border-t border-slate-200 dark:border-slate-800/80 pb-safe">
           <div className="flex justify-around py-2 bg-slate-100/80 dark:bg-slate-900/80 border-y border-slate-200 dark:border-slate-800/80 mx-4 rounded-t-xl shadow-xl">
             {centerNavItems.map((item) => {
               const Icon = item.icon;
@@ -260,7 +365,7 @@ export function DashboardNavigation({ session, pathname = '' }: DashboardNavigat
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex flex-col items-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
+                  className={`min-h-[44px] flex flex-col items-center justify-center gap-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors ${
                     isActive
                       ? 'bg-violet-600 text-white'
                       : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-200/50 dark:hover:bg-slate-800/50'

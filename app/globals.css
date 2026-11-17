@@ -254,6 +254,15 @@
   background-color: hsl(var(--muted-foreground) / 0.5);
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 .prose-invert {
   --tw-prose-body: hsl(var(--foreground));
   --tw-prose-headings: hsl(var(--foreground));

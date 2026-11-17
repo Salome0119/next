@@ -259,10 +259,10 @@ export function AccountSection() {
           aria-labelledby="delete-modal-title"
         >
           <div
-            className="card w-full max-w-md animate-slide-up"
+            className="card w-[calc(100%-2rem)] max-w-lg mx-auto animate-slide-up"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6 border-b border-red-500/30">
+            <div className="p-4 sm:p-6 border-b border-red-500/30">
               <h3 id="delete-modal-title" className="text-xl font-bold text-red-300 flex items-center gap-2">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
@@ -270,7 +270,7 @@ export function AccountSection() {
                 Confirmar Eliminación
               </h3>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <p className="text-slate-300">
                 Escribe <strong className="text-red-300">"ELIMINAR"</strong> y tu contraseña actual para confirmar.
                 <br />

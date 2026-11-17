@@ -10,7 +10,7 @@ export default async function DashboardLayout({ children }: { children: ReactNod
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0b0f19] text-slate-900 dark:text-slate-100">
       <DashboardNavigation session={session} pathname="/dashboard" />
       <OnboardingTour autoStart={!hasCompletedOnboarding} hasCompletedOnboarding={hasCompletedOnboarding} />
-      <main className="flex-1 pt-14">{children}</main>
+      <main className="flex-1 pt-14 pb-24 md:pb-0">{children}</main>
     </div>
   );
 }

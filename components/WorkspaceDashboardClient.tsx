@@ -150,13 +150,13 @@ export function WorkspaceDashboardClient({ workspaceId, initialTasks, initialMem
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Manual Task Creation - Executive Card */}
-      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm animate-slide-up">
+      <section className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm animate-slide-up">
         <h2 className="text-xs font-semibold tracking-wider text-slate-800 dark:text-slate-200 flex items-center gap-2 mb-4">
           <Zap className="w-4 h-4 text-violet-600 dark:text-violet-400" aria-hidden="true" />
           {t('dashboard.quickTask')}
         </h2>
-        <form onSubmit={handleAddTask} className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
-          <div className="flex-1 min-w-0">
+        <form onSubmit={handleAddTask} className="flex flex-col md:flex-row gap-3 items-stretch md:items-center">
+          <div className="w-full md:flex-1 min-w-0">
             <label htmlFor="tour-quick-task" className="sr-only">{t('dashboard.quickTask')}</label>
             <input
               id="tour-quick-task"
@@ -169,11 +169,11 @@ export function WorkspaceDashboardClient({ workspaceId, initialTasks, initialMem
               className="bg-slate-100/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 rounded-xl px-4 py-3 focus:border-violet-500 focus:ring-1 focus:ring-violet-500 w-full transition-colors"
             />
           </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-wrap w-full sm:w-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:flex md:flex-row items-stretch gap-2 md:flex-wrap w-full md:w-auto">
             <select
               value={newTaskPriority}
               onChange={(e) => setNewTaskPriority(e.target.value)}
-              className="bg-slate-100/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 w-full sm:w-auto min-w-[140px] focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
+              className="min-h-[44px] bg-slate-100/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 w-full sm:w-auto min-w-[140px] focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
             >
               <option value="alta" className="bg-white dark:bg-slate-800">{t('dashboard.priority.high')}</option>
               <option value="media" className="bg-white dark:bg-slate-800">{t('dashboard.priority.medium')}</option>
@@ -183,7 +183,7 @@ export function WorkspaceDashboardClient({ workspaceId, initialTasks, initialMem
               <select
                 value={newTaskAssignee || ''}
                 onChange={(e) => setNewTaskAssignee(e.target.value ? Number(e.target.value) : null)}
-                className="bg-slate-100/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 w-full sm:w-auto min-w-[180px] focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
+                className="min-h-[44px] bg-slate-100/80 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-slate-100 rounded-xl px-4 py-2.5 w-full sm:w-auto min-w-[180px] focus:border-violet-500 focus:ring-1 focus:ring-violet-500 transition-colors"
               >
                 <option value="" className="bg-white dark:bg-slate-800">{t('dashboard.unassigned')}</option>
                 {members.map(m => (
@@ -197,7 +197,7 @@ export function WorkspaceDashboardClient({ workspaceId, initialTasks, initialMem
           <button
             type="submit"
             disabled={addingTask || !newTaskTitle.trim()}
-            className="bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium rounded-xl px-5 py-2.5 shadow-md shadow-violet-600/20 whitespace-nowrap sm:w-auto transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="min-h-[44px] w-full md:w-auto bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-medium rounded-xl px-5 py-2.5 shadow-md shadow-violet-600/20 whitespace-nowrap transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             aria-label={addingTask ? t('dashboard.adding') : t('dashboard.addTask')}
           >
             {addingTask ? (
