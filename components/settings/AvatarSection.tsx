@@ -112,7 +112,7 @@ export function AvatarSection() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10">
         {/* LEFT: Controls */}
-        <div className="lg:col-span-6 space-y-8">
+        <div className="lg:col-span-7 space-y-8">
           {/* Floating toggle */}
           <section>
             <div className="flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-gradient-to-r from-violet-950/60 to-slate-950/60 backdrop-blur-xl p-5 shadow-xl shadow-violet-950/20 transition-all hover:border-white/20">
@@ -125,47 +125,12 @@ export function AvatarSection() {
                 role="switch"
                 aria-checked={settings.enabled}
                 onClick={() => updateSettings({ enabled: !settings.enabled })}
-                className={`relative h-8 w-14 shrink-0 rounded-full border-2 transition-all duration-300 ${
-                  settings.enabled ? 'border-violet-400 bg-violet-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]' : 'border-slate-600 bg-slate-700'
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 transition-colors duration-200 ease-in-out ${
+                  settings.enabled ? 'border-transparent bg-violet-500 shadow-[0_0_15px_rgba(168,85,247,0.4)]' : 'border-slate-600 bg-slate-700'
                 }`}
               >
-                <span className={`absolute top-1 h-6 w-6 rounded-full bg-white shadow-lg transition-transform duration-300 ease-out ${settings.enabled ? 'translate-x-7' : 'translate-x-1'}`} aria-hidden="true" />
+                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out ${settings.enabled ? 'translate-x-5' : 'translate-x-0'}`} aria-hidden="true" />
               </button>
-            </div>
-          </section>
-
-          {/* Accessory colors */}
-          <section>
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-violet-300 mb-3">Color de accesorios</h3>
-            <div className="space-y-3">
-              {(
-                [
-                  { key: 'glasses' as const, label: 'Gafas', description: 'Montura y bisagras metálicas.' },
-                  { key: 'headphones' as const, label: 'Audífonos', description: 'Diadema acolchada y orejeras.' },
-                  { key: 'hat' as const, label: 'Gorrito', description: 'Tejido de punto del gorro.' },
-                ] as const
-              ).map((accessory) => (
-                <div
-                  key={accessory.key}
-                  className={settings.accessories[accessory.key] ? '' : 'opacity-60 transition-opacity duration-200'}
-                >
-                  <ColorField
-                    label={accessory.label}
-                    description={
-                      settings.accessories[accessory.key]
-                        ? accessory.description
-                        : `${accessory.description} (actívalo para verlo)`
-                    }
-                    value={settings.accessoryColors[accessory.key]}
-                    palette={ACCESSORY_PALETTE}
-                    onChange={(color) =>
-                      updateSettings({
-                        accessoryColors: { ...settings.accessoryColors, [accessory.key]: color },
-                      })
-                    }
-                  />
-                </div>
-              ))}
             </div>
           </section>
 
@@ -239,42 +204,82 @@ export function AvatarSection() {
             </div>
           </section>
 
-          {/* Colors */}
+          {/* Accessory colors & Colors in two-column grid */}
           <section>
-            <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-violet-300 mb-3">Colores</h3>
-            <div className="space-y-3">
-              <ColorField
-                label="Glow de acento"
-                description="Luces, partículas y brillo del corazón."
-                value={settings.accentColor}
-                palette={ACCENT_PALETTE}
-                onChange={(accentColor) => updateSettings({ accentColor })}
-              />
-              <ColorField
-                label="Color de ojos"
-                description="Ojos, mejillas y brillos faciales."
-                value={settings.eyeColor}
-                palette={EYE_PALETTE}
-                onChange={(eyeColor) => updateSettings({ eyeColor })}
-              />
-              <ColorField
-                label="Tono del cuerpo"
-                description="Acabado del casco y la armadura."
-                value={settings.bodyTone}
-                palette={BODY_PALETTE}
-                onChange={(bodyTone) => updateSettings({ bodyTone })}
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full">
+              {/* Columna 1: Color de Accesorios */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-violet-300 mb-3">Color de Accesorios</h3>
+                <div className="space-y-3">
+                  {(
+                    [
+                      { key: 'glasses' as const, label: 'Gafas', description: 'Montura y bisagras metálicas.' },
+                      { key: 'headphones' as const, label: 'Audífonos', description: 'Diadema acolchada y orejeras.' },
+                      { key: 'hat' as const, label: 'Gorrito', description: 'Tejido de punto del gorro.' },
+                    ] as const
+                  ).map((accessory) => (
+                    <div
+                      key={accessory.key}
+                      className={settings.accessories[accessory.key] ? '' : 'opacity-60 transition-opacity duration-200'}
+                    >
+                      <ColorField
+                        label={accessory.label}
+                        description={
+                          settings.accessories[accessory.key]
+                            ? accessory.description
+                            : `${accessory.description} (actívalo para verlo)`
+                        }
+                        value={settings.accessoryColors[accessory.key]}
+                        palette={ACCESSORY_PALETTE}
+                        onChange={(color) =>
+                          updateSettings({
+                            accessoryColors: { ...settings.accessoryColors, [accessory.key]: color },
+                          })
+                        }
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Columna 2: Colores Generales */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-[0.15em] text-violet-300 mb-3">Colores</h3>
+                <div className="space-y-3">
+                  <ColorField
+                    label="Glow de acento"
+                    description="Luces, partículas y brillo del corazón."
+                    value={settings.accentColor}
+                    palette={ACCENT_PALETTE}
+                    onChange={(accentColor) => updateSettings({ accentColor })}
+                  />
+                  <ColorField
+                    label="Color de ojos"
+                    description="Ojos, mejillas y brillos faciales."
+                    value={settings.eyeColor}
+                    palette={EYE_PALETTE}
+                    onChange={(eyeColor) => updateSettings({ eyeColor })}
+                  />
+                  <ColorField
+                    label="Tono del cuerpo"
+                    description="Acabado del casco y la armadura."
+                    value={settings.bodyTone}
+                    palette={BODY_PALETTE}
+                    onChange={(bodyTone) => updateSettings({ bodyTone })}
+                  />
+                </div>
+              </div>
             </div>
           </section>
         </div>
 
         {/* RIGHT: Sticky 3D Studio */}
-        <div className="lg:col-span-6">
+        <div className="lg:col-span-5">
           <div className="sticky top-6 space-y-6">
             <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-slate-950 via-[#0a0a14]/95 to-slate-950 shadow-2xl shadow-purple-950/20 backdrop-blur-2xl">
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(168,85,247,0.15),transparent_70%)]" />
 
-              <div className="relative h-[380px] w-full">
+              <div className="relative h-[450px] w-full">
                 <Avatar3D
                   interactive
                   className="h-full w-full"

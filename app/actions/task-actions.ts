@@ -67,7 +67,7 @@ export async function createTaskFromAIAction(data: {
     
     console.log('[CREATE_TASK_FROM_AI] Normalized workspaceId:', targetWorkspaceId, 'isPersonal:', isPersonal);
     
-    let targetAssignedToUserId: number = userId;
+    let targetAssignedToUserId: number | null = userId;
 
     if (!isPersonal) {
       console.log('[CREATE_TASK_FROM_AI] Checking workspace membership for workspaceId:', targetWorkspaceId, 'userId:', userId);

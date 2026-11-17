@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { Logo } from '@/components/Logo';
 import {
   Zap,
   Users,
@@ -80,7 +81,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="flex items-center justify-between h-16">
             <Link href="/" className="flex items-center gap-2 text-xl font-heading font-bold tracking-tight" aria-label="PlanAI - Inicio">
-              <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-lg">P</span>
+              <Logo size={32} priority />
               <span className="bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">PlanAI</span>
             </Link>
 
@@ -215,7 +216,7 @@ export default function LandingPage() {
                     </div>
                     <div className="space-y-3">
                       {mockTasks.map((task) => {
-                        const config = statusConfig[task.status];
+                        const config = statusConfig[task.status as keyof typeof statusConfig];
                         const Icon = config.icon;
                         return (
                           <div
@@ -358,7 +359,7 @@ export default function LandingPage() {
           <div className="container mx-auto px-6">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6">
               <div className="flex items-center gap-2">
-                <span className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-indigo-500 flex items-center justify-center text-white font-heading font-bold text-lg">P</span>
+                <Logo size={32} priority />
                 <span className="font-heading font-bold text-xl bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">PlanAI</span>
               </div>
               <p className="text-slate-500 text-sm">

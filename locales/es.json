@@ -81,9 +81,21 @@
       "monthlyUsage": "Uso mensual",
       "creditsUsed": "Créditos utilizados",
       "creditsRemaining": "Créditos restantes",
+      "generationsRealized": "Generaciones Realizadas",
       "resetDate": "Fecha de reinicio",
       "usageHistory": "Historial de uso",
-      "noUsage": "No hay uso registrado este mes"
+      "noUsage": "No hay uso registrado este mes",
+      "noUsageDesc": "Tu actividad de IA aparecerá aquí automáticamente.",
+      "detailTitle": "Detalle de Generación",
+      "promptLabel": "Título / Acción",
+      "viewDetails": "Ver detalles de",
+      "dateTime": "Fecha y Hora",
+      "modelLabel": "Modelo de IA",
+      "tokensConsumed": "Tokens Consumidos",
+      "aiResponse": "Respuesta de la IA",
+      "copyPrompt": "Copiar prompt",
+      "close": "Cerrar",
+      "noResponse": "No hay respuesta disponible para esta generación."
     },
     "account": {
       "title": "Cuenta",
@@ -201,6 +213,44 @@
       "dangerDesc": "Eliminar el workspace eliminará todas las tareas, miembros e invitaciones permanentemente.",
       "deleteWorkspace": "Eliminar workspace",
       "noPermission": "No tienes permisos para gestionar este workspace. Contacta al propietario o administrador."
+    },
+    "invite": {
+      "title": "Invitar miembro al workspace",
+      "subtitle": "Envía una invitación por correo electrónico para colaborar en este espacio.",
+      "emailLabel": "Correo electrónico",
+      "emailPlaceholder": "usuario@ejemplo.com",
+      "roleLabel": "Rol del miembro",
+      "roleAdmin": "Administrador",
+      "roleAdminDesc": "Puede gestionar miembros y configuración",
+      "roleMember": "Miembro",
+      "roleMemberDesc": "Puede ver y editar tareas del espacio",
+      "sending": "Enviando...",
+      "sendInvitation": "Enviar invitación",
+      "invitationSent": "Invitación enviada",
+      "invitationSentDesc": "Se ha enviado la invitación al correo electrónico indicado"
+    }
+  },
+  "onboarding": {
+    "welcome": "¡Bienvenida a PlanAI!",
+    "welcomeDesc": "Este es tu espacio inteligente para organizar tareas, colaborar en equipos y potenciar tu productividad con IA.",
+    "quickTask": {
+      "title": "Creación y Gestión de Tareas",
+      "desc": "Añade tareas rápidas, asígnales prioridad, etiquetas y fechas de entrega de forma intuitiva."
+    },
+    "aiGenerator": {
+      "title": "Generador de IA",
+      "desc": "Usa nuestra inteligencia artificial integrada para extraer tareas de documentos, generar resúmenes o redactar contenido automáticamente."
+    },
+    "workspace": {
+      "title": "Espacios de Trabajo (Workspaces)",
+      "desc": "Cambia entre tus diferentes workspaces o invita a colaboradores para trabajar en equipo."
+    },
+    "navigation": {
+      "previous": "Anterior",
+      "next": "Siguiente",
+      "finish": "Finalizar",
+      "progress": "{{current}} de {{total}}",
+      "close": "Cerrar guía"
     }
   },
   "auth": {

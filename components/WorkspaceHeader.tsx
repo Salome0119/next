@@ -7,9 +7,10 @@ import { LayoutDashboard, Users, Settings } from 'lucide-react';
 interface WorkspaceHeaderProps {
   workspaceId: number;
   workspaceName: string;
+  workspaceDescription?: string | null;
 }
 
-export function WorkspaceHeader({ workspaceId, workspaceName }: WorkspaceHeaderProps) {
+export function WorkspaceHeader({ workspaceId, workspaceName, workspaceDescription }: WorkspaceHeaderProps) {
   const pathname = usePathname();
 
   const tabs = [
@@ -24,7 +25,9 @@ export function WorkspaceHeader({ workspaceId, workspaceName }: WorkspaceHeaderP
       <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-heading font-bold text-slate-900 dark:text-white">{workspaceName}</h1>
-          <p className="text-slate-500 dark:text-slate-400 mt-1">Workspace ID: {workspaceId}</p>
+          {workspaceDescription && (
+            <p className="text-slate-500 dark:text-slate-400 mt-1">{workspaceDescription}</p>
+          )}
         </div>
       </header>
 

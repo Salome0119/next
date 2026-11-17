@@ -26,8 +26,20 @@ async function verifyWorkspaceAccess(workspaceId: number | null, userId: number)
   return role !== null;
 }
 
+let dbInitPromise: Promise<void> | null = null;
+
 // Crear tabla si no existe (Útil para pruebas iniciales)
 export async function initDb() {
+  if (!dbInitPromise) {
+    dbInitPromise = initializeDb().catch((error) => {
+      dbInitPromise = null;
+      throw error;
+    });
+  }
+  return dbInitPromise;
+}
+
+async function initializeDb() {
   await initWorkspaceDb();
   await sql`
     CREATE TABLE IF NOT EXISTS tareas (
@@ -79,6 +91,14 @@ interface TareaRow {
   assigned_to_user_id: number | null;
   assigned_to_name: string | null;
   assigned_to_email: string | null;
+  total_count?: number;
+}
+
+interface WorkspaceMemberRow {
+  user_id: number;
+  name: string | null;
+  email: string | null;
+  role: string;
 }
 
 export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
@@ -86,7 +106,7 @@ export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
   const offset = (page - 1) * pageSize;
   
   let tareas: TareaRow[] = [];
-  let totalResult: { count: string }[] = [];
+  let userId: number | null = null;
   
   if (workspaceId) {
     console.log('[getTareas] Querying for workspaceId:', workspaceId);
@@ -102,7 +122,8 @@ export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
         t.assigned_to_user_id, 
         t.creado_en,
         u.name as assigned_to_name, 
-        u.email as assigned_to_email
+        u.email as assigned_to_email,
+        COUNT(*) OVER() AS total_count
       FROM tareas t
       LEFT JOIN users u ON t.assigned_to_user_id = u.id
       WHERE t.workspace_id = ${workspaceId}
@@ -110,10 +131,9 @@ export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
       LIMIT ${pageSize} OFFSET ${offset}
     `;
     console.log('[getTareas] Found tasks:', tareas.length);
-    totalResult = await sql`SELECT COUNT(*) as count FROM tareas WHERE workspace_id = ${workspaceId}` as { count: string }[];
   } else {
     // Para tareas personales (sin workspace), mostrar solo las del usuario actual
-    const userId = await getCurrentUserId();
+    userId = await getCurrentUserId();
     if (userId) {
       tareas = await sql`
         SELECT 
@@ -127,20 +147,29 @@ export async function getTareas(page = 1, pageSize = 10, workspaceId?: number) {
           t.assigned_to_user_id, 
           t.creado_en,
           u.name as assigned_to_name, 
-          u.email as assigned_to_email
+          u.email as assigned_to_email,
+          COUNT(*) OVER() AS total_count
         FROM tareas t
         LEFT JOIN users u ON t.assigned_to_user_id = u.id
         WHERE t.workspace_id IS NULL AND t.assigned_to_user_id = ${userId}
         ORDER BY t.id DESC 
         LIMIT ${pageSize} OFFSET ${offset}
       `;
-      totalResult = await sql`SELECT COUNT(*) as count FROM tareas WHERE workspace_id IS NULL AND assigned_to_user_id = ${userId}` as { count: string }[];
-    } else {
-      totalResult = [{ count: '0' }];
     }
   }
   
-  const total = Number(totalResult[0]?.count || 0);
+  let total = Number(tareas[0]?.total_count ?? 0);
+
+  if (tareas.length === 0 && offset > 0) {
+    if (workspaceId) {
+      const countRows = await sql`SELECT COUNT(*)::int as count FROM tareas WHERE workspace_id = ${workspaceId}`;
+      total = Number(countRows[0]?.count ?? 0);
+    } else if (userId) {
+      const countRows = await sql`SELECT COUNT(*)::int as count FROM tareas WHERE workspace_id IS NULL AND assigned_to_user_id = ${userId}`;
+      total = Number(countRows[0]?.count ?? 0);
+    }
+  }
+
   return { tareas, total, page, pageSize, totalPages: Math.ceil(total / pageSize) };
 }
 
@@ -389,7 +418,7 @@ export async function getTasksByAssignee(workspaceId: number) {
   const hasAccess = await verifyWorkspaceAccess(workspaceId, userId);
   if (!hasAccess) throw new Error('Sin acceso a este workspace');
 
-  const tasks: unknown[] = await sql`
+  const tasks: TareaRow[] = await sql`
     SELECT t.*, u.name as assigned_to_name, u.email as assigned_to_email
     FROM tareas t
     LEFT JOIN users u ON t.assigned_to_user_id = u.id
@@ -398,15 +427,15 @@ export async function getTasksByAssignee(workspaceId: number) {
   `;
 
   // Agrupar por asignado
-  const grouped: Record<string, { userId: number | null; name: string | null; email: string | null; tasks: unknown[] }> = {};
-  
+  const grouped: Record<string, { userId: number | null; name: string | null; email: string | null; tasks: TareaRow[] }> = {};
+
   for (const task of tasks) {
-    const key = (task as Record<string, unknown>).assigned_to_user_id ? `user_${(task as Record<string, unknown>).assigned_to_user_id}` : 'unassigned';
+    const key = task.assigned_to_user_id ? `user_${task.assigned_to_user_id}` : 'unassigned';
     if (!grouped[key]) {
       grouped[key] = {
-        userId: (task as Record<string, unknown>).assigned_to_user_id as number | null,
-        name: (task as Record<string, unknown>).assigned_to_name as string | null,
-        email: (task as Record<string, unknown>).assigned_to_email as string | null,
+        userId: task.assigned_to_user_id,
+        name: task.assigned_to_name,
+        email: task.assigned_to_email,
         tasks: [],
       };
     }
@@ -414,7 +443,7 @@ export async function getTasksByAssignee(workspaceId: number) {
   }
 
   // Obtener todos los miembros del workspace para incluir los que no tienen tareas
-  const members: unknown[] = await sql`
+  const members: WorkspaceMemberRow[] = await sql`
     SELECT wm.user_id, u.name, u.email, wm.role
     FROM workspace_members wm
     JOIN users u ON wm.user_id = u.id
@@ -424,7 +453,16 @@ export async function getTasksByAssignee(workspaceId: number) {
       u.name
   `;
 
-  const result = members.map(m => ({
+  type AssigneeGroup = {
+    userId: number | null;
+    name: string | null;
+    email: string | null;
+    role: string;
+    tasks: TareaRow[];
+    taskCount: number;
+  };
+
+  const result: AssigneeGroup[] = members.map((m: WorkspaceMemberRow) => ({
     userId: m.user_id,
     name: m.name,
     email: m.email,

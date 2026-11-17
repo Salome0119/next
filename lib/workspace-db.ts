@@ -110,6 +110,28 @@ export async function initWorkspaceDb() {
   `;
 }
 
+export async function getWorkspaceById(workspaceId: number): Promise<Workspace | null> {
+  await initWorkspaceDb();
+
+  const workspaces = await sql`
+    SELECT id, name, description, created_by, created_at, updated_at
+    FROM workspaces
+    WHERE id = ${workspaceId}
+  `;
+
+  const row = workspaces[0];
+  if (!row) return null;
+
+  return {
+    id: row.id,
+    name: row.name,
+    description: row.description,
+    created_by: row.created_by,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+  };
+}
+
 export async function createDefaultWorkspaceForUser(userId: number): Promise<Workspace> {
   const workspaces = await sql`
     INSERT INTO workspaces (name, description, created_by)

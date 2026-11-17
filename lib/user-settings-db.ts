@@ -32,6 +32,7 @@ export interface AiGenerationHistory {
   id: number;
   userId: number;
   prompt: string;
+  response: string | null;
   tokensUsed: number;
   model: string;
   createdAt: Date;
@@ -72,6 +73,7 @@ function mapAiGenerationHistory(row: any): AiGenerationHistory {
     id: row.id,
     userId: row.userId,
     prompt: row.prompt,
+    response: row.response ?? null,
     tokensUsed: row.tokensUsed,
     model: row.model,
     createdAt: row.createdAt instanceof Date ? row.createdAt : new Date(row.createdAt),
@@ -121,10 +123,16 @@ export async function initUserSettingsDb() {
       id SERIAL PRIMARY KEY,
       user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
       prompt TEXT NOT NULL,
+      response TEXT,
       tokens_used INTEGER DEFAULT 0,
       model TEXT,
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
+  `;
+
+  await sql`
+    ALTER TABLE ai_generation_history
+    ADD COLUMN IF NOT EXISTS response TEXT;
   `;
 
   await sql`
@@ -344,16 +352,17 @@ export async function incrementAiUsage(userId: number, tokensUsed: number): Prom
   return metrics.length > 0 ? mapAiUsageMetrics(metrics[0]) : null;
 }
 
-export async function addAiGenerationHistory(userId: number, prompt: string, tokensUsed: number, model?: string): Promise<AiGenerationHistory | null> {
+export async function addAiGenerationHistory(userId: number, prompt: string, tokensUsed: number, model?: string, response?: string | null): Promise<AiGenerationHistory | null> {
   await initUserSettingsDb();
   
   const history = await sql`
-    INSERT INTO ai_generation_history (user_id, prompt, tokens_used, model)
-    VALUES (${userId}, ${prompt}, ${tokensUsed}, ${model || 'gpt-4o-mini'})
+    INSERT INTO ai_generation_history (user_id, prompt, tokens_used, model, response)
+    VALUES (${userId}, ${prompt}, ${tokensUsed}, ${model || 'gpt-4o-mini'}, ${response ?? null})
     RETURNING 
       id,
       user_id as "userId",
       prompt,
+      response,
       tokens_used as "tokensUsed",
       model,
       created_at as "createdAt"
@@ -370,6 +379,7 @@ export async function getAiGenerationHistory(userId: number, limit: number = 10)
       id,
       user_id as "userId",
       prompt,
+      response,
       tokens_used as "tokensUsed",
       model,
       created_at as "createdAt"

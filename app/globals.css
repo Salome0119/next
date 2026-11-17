@@ -160,6 +160,10 @@
     @apply bg-slate-900/80 backdrop-blur-md border border-slate-800;
   }
 
+  .card-glass {
+    @apply bg-slate-900/70 backdrop-blur-xl;
+  }
+
   .glass-strong {
     @apply bg-slate-900/90 backdrop-blur-xl border border-slate-800;
   }

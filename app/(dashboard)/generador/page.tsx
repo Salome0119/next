@@ -25,6 +25,7 @@ import { saveAs } from 'file-saver';
 import { useTranslation } from '@/context/LanguageContext';
 import { useAvatar } from '@/context/AvatarContext';
 import Avatar3D from '@/components/avatar/Avatar3D';
+import { Trash2 } from 'lucide-react';
 
 interface Workspace {
   id: number;
@@ -52,6 +53,14 @@ function normalizeMarkdownBlocks(text: string): string {
     output.push(line);
   }
   return output.join('\n');
+}
+
+// Strips markdown emphasis asterisks (`**bold**`, `*italic*`) so the edit
+// textarea shows clean, editable text instead of raw markdown markers.
+function stripMarkdownAsterisks(text: string): string {
+  return text
+    .replace(/\*\*/g, '')
+    .replace(/\*/g, '');
 }
 
 type ResultFormat = 'list' | 'text';
@@ -1179,8 +1188,9 @@ export default function GeneradorPage() {
   }, [resultado, prompt, isEn, pdfInstruction, pdfResultHeader]);
 
   const handleStartEdit = useCallback(() => {
-    // Result is stored as markdown, so edit the raw source directly
-    setEditedContent(resultado);
+    // Edit a cleaned version: markdown emphasis asterisks (** and *) removed
+    // so the user edits plain, readable text
+    setEditedContent(stripMarkdownAsterisks(resultado));
     setIsEditing(true);
     setTimeout(() => {
       editableRef.current?.focus({ preventScroll: true });
@@ -1192,6 +1202,28 @@ export default function GeneradorPage() {
     setIsEditing(false);
     setEditedContent('');
   }, []);
+
+  const handleClearResponse = useCallback(() => {
+    // Reset the generated response area entirely
+    setResultado('');
+    setPrompt('');
+    setIsEditing(false);
+    setEditedContent('');
+    setGeneratedTasks([]);
+    setIsSmartPasteResult(false);
+    setGeneracionExitosa(false);
+    setError('');
+    setCopiado(false);
+    setDocumentContent('');
+    setUploadedFileName('');
+    setFileError('');
+    setShowFilePreview(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setMensajeExito(isEn ? 'Response cleared' : 'Respuesta eliminada');
+    window.setTimeout(() => setMensajeExito(''), 3000);
+  }, [isEn]);
 
   const handleSaveEdit = useCallback(() => {
     if (!isEditing) return;
@@ -1513,7 +1545,7 @@ export default function GeneradorPage() {
                 </span>
               </div>
             </div>
-            {/* Actions: Editar, Copiar, PDF, Word (Editar hidden while editing) */}
+            {/* Actions: Editar, Copiar, PDF, Word, Limpiar (Editar hidden while editing) */}
             <div className="flex items-center gap-2 flex-wrap">
               {!isEditing && (
                 <button
@@ -1543,15 +1575,25 @@ export default function GeneradorPage() {
                 <span aria-hidden="true">📥</span>
                 {actionsPdf}
               </button>
-              <button
-                onClick={exportToWord}
-                disabled={cargando}
-                className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-500/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                aria-label={isEn ? "Download as Word" : "Descargar como Word"}
-              >
-                <span aria-hidden="true">📄</span>
-                {actionsWord}
-              </button>
+               <button
+                 onClick={exportToWord}
+                 disabled={cargando}
+                 className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-purple-500/50 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                 aria-label={isEn ? "Download as Word" : "Descargar como Word"}
+               >
+                 <span aria-hidden="true">📄</span>
+                 {actionsWord}
+               </button>
+               <button
+                 onClick={handleClearResponse}
+                 disabled={cargando || (!resultado.trim() && !prompt.trim())}
+                 className="bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:border-red-500/50 hover:bg-red-50 dark:hover:bg-red-950/30 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 text-xs px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 cursor-pointer shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                 aria-label={isEn ? "Clear response" : "Limpiar respuesta"}
+                 title={isEn ? "Clear response" : "Limpiar respuesta"}
+               >
+                 <Trash2 className="w-4 h-4" aria-hidden="true" />
+                 {isEn ? "Clear" : "Limpiar"}
+               </button>
             </div>
           </div>
 
