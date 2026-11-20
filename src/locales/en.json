@@ -403,15 +403,15 @@
       "show": "Query Document (RAG)"
     },
     "tour": {
-      "welcome": "🎉 Welcome to the AI Generator!",
-      "welcomeDesc": "We'll show you how to create content and tasks with artificial intelligence.",
+      "welcome": "AI Automation",
+      "welcomeDesc": "Welcome to PlanAI's artificial intelligence center. Here you can process text and extract value automatically.",
       "presets": {
-        "title": "Quick Prompts",
-        "desc": "Use these buttons to get started quickly: extract tasks, summarize, create schedules or format for SmartPaste."
+        "title": "Generation Modes",
+        "desc": "Select quick shortcuts like 'Extract Tasks', 'Executive Summary' or 'Create Schedule' to save time."
       },
       "prompt": {
-        "title": "Your AI Instruction",
-        "desc": "Write here what you want the AI to generate. Be specific for best results. Press Enter for new line, Ctrl+Enter to send."
+        "title": "Data Input",
+        "desc": "Paste or type the content, notes or documents you want to analyze and structure."
       },
       "file": {
         "title": "Attach Documents",
@@ -426,8 +426,8 @@
         "desc": "Select a workspace and priority, then click \"Create Task in Workspace\" to save the response as an actionable task."
       },
       "result": {
-        "title": "Result Actions",
-        "desc": "Edit the response, copy to clipboard, or download as PDF/Word."
+        "title": "Results & Export",
+        "desc": "View the response in Markdown format, copy it, or save it directly as a task in your workspace."
       },
       "smartPaste": {
         "title": "Advanced Automation",

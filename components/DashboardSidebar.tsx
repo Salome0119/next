@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import Link from 'next/link';
-import { Zap, Users, Clock, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Zap, Clock, CheckCircle2, TrendingUp } from 'lucide-react';
 import { useTranslation } from '@/context/LanguageContext';
 
 interface Tarea {
@@ -24,11 +24,6 @@ interface DashboardSidebarProps {
 export function DashboardSidebar({ tasks }: DashboardSidebarProps) {
   const { t, isReady, language } = useTranslation();
   const isEn = language === 'en';
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(false);
-  }, []);
 
   const stats = useMemo(() => {
     const todayStr = new Date().toISOString().slice(0, 10);
@@ -54,7 +49,7 @@ export function DashboardSidebar({ tasks }: DashboardSidebarProps) {
     { label: isEn ? "Today's tasks" : "Tareas de hoy", value: stats.todayTasks, icon: Zap, color: 'text-rose-400 bg-rose-500/10 border-rose-500/20' },
   ];
 
-  if (loading || !isReady) {
+  if (!isReady) {
     return (
       <div className="space-y-6">
         <div className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl animate-pulse">
@@ -114,18 +109,6 @@ export function DashboardSidebar({ tasks }: DashboardSidebarProps) {
             </svg>
           </div>
         </Link>
-      </section>
-
-      <section className="bg-white dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-        <h3 className="text-sm font-semibold tracking-wider text-slate-500 dark:text-slate-400 flex items-center gap-2">
-          <Users className="w-4 h-4 text-violet-400" aria-hidden="true" />
-          {t('workspace.team')}
-        </h3>
-        <div className="space-y-2">
-          <p className="text-slate-500 dark:text-slate-400 text-sm text-center py-4">
-            {t('workspace.noMembersDesc')}
-          </p>
-        </div>
       </section>
     </div>
   );

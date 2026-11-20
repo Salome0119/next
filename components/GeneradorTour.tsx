@@ -11,11 +11,12 @@ interface GeneradorTourProps {
 }
 
 export function GeneradorTour({ autoStart = true, hasCompletedGeneradorTour = false }: GeneradorTourProps) {
-  const { t, isReady } = useTranslation();
+  const { t, language, isReady } = useTranslation();
 
   const runTour = () => {
     const driverObj = driver({
       showProgress: true,
+      progressText: language === 'es' ? '{{current}} de {{total}}' : '{{current}} of {{total}}',
       animate: true,
       allowClose: true,
       nextBtnText: t('common.next'),
@@ -47,56 +48,11 @@ export function GeneradorTour({ autoStart = true, hasCompletedGeneradorTour = fa
           },
         },
         {
-          element: '#tour-file-upload',
-          popover: {
-            title: t('generador.tour.file.title'),
-            description: t('generador.tour.file.desc'),
-            side: 'right',
-            align: 'start',
-          },
-        },
-        {
-          element: '#tour-generate-btn',
-          popover: {
-            title: t('generador.tour.generate.title'),
-            description: t('generador.tour.generate.desc'),
-            side: 'top',
-            align: 'center',
-          },
-        },
-        {
-          element: '#tour-workspace-select',
-          popover: {
-            title: t('generador.tour.workspace.title'),
-            description: t('generador.tour.workspace.desc'),
-            side: 'top',
-            align: 'center',
-          },
-        },
-        {
           element: '#tour-result-actions',
           popover: {
             title: t('generador.tour.result.title'),
             description: t('generador.tour.result.desc'),
             side: 'top',
-            align: 'center',
-          },
-        },
-        {
-          element: '#tour-smart-paste',
-          popover: {
-            title: t('generador.tour.smartPaste.title'),
-            description: t('generador.tour.smartPaste.desc'),
-            side: 'top',
-            align: 'center',
-          },
-        },
-        {
-          element: '#tour-history-btn',
-          popover: {
-            title: t('generador.tour.history.title'),
-            description: t('generador.tour.history.desc'),
-            side: 'left',
             align: 'center',
           },
         },
@@ -126,7 +82,7 @@ export function GeneradorTour({ autoStart = true, hasCompletedGeneradorTour = fa
       }, 500);
       return () => clearTimeout(timer);
     }
-  }, [autoStart, hasCompletedGeneradorTour, isReady]);
+  }, [autoStart, hasCompletedGeneradorTour, isReady, language]);
 
   return null;
 }

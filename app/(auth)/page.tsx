@@ -35,11 +35,9 @@ export default function LoginPage() {
       window.location.href = `${baseUrl}${newUserParam}`;
     } else {
       showSuccess('Cuenta creada', 'Tu cuenta ha sido creada exitosamente');
-      const resultWithData = result as { success: boolean; data?: { workspaceId: number } };
-      const baseUrl = resultWithData.data?.workspaceId
-        ? `/dashboard/workspace/${resultWithData.data.workspaceId}`
-        : '/dashboard';
-      window.location.href = `${baseUrl}?new_user=true`;
+      // Redirige a la ruta principal del dashboard; el workspace activo del
+      // usuario se resuelve de forma fluida y automatizada (sin IDs numéricos estáticos)
+      window.location.href = '/dashboard?new_user=true';
     }
   };
 

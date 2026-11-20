@@ -5,24 +5,18 @@ import { Logo } from '@/components/Logo';
 import {
   Zap,
   Users,
-  BarChart3,
   ArrowRight,
-  Lock,
   Sparkles,
-  ChevronRight,
-  Calendar,
-  Target,
-  TrendingUp,
   CheckCircle2,
-  Shield,
   Globe,
   Check,
   Circle,
   Clock,
   Flag,
-  Brain,
-  Activity,
   Layers,
+  ListChecks,
+  Mail,
+  FileText,
 } from 'lucide-react';
 
 import AIHeroInteractive3D from '@/components/AIHeroInteractive3D';
@@ -33,27 +27,27 @@ const navLinks = [
 
 const features = [
   {
-    icon: Brain,
-    title: 'Planificación Automática por IA',
-    description: 'Algoritmos inteligentes que organizan, priorizan y programan tus tareas automáticamente según urgencia, importancia y tu ritmo de trabajo.',
+    icon: ListChecks,
+    title: 'Gestión de Tareas',
+    description: 'Creación de tareas rápidas, prioridades y seguimiento en tiempo real.',
   },
   {
     icon: Users,
     title: 'Workspaces Colaborativos',
-    description: 'Tableros dinámicos tipo Kanban, asignación de tareas en tiempo real, comentarios y seguimiento de progreso para equipos distribuidos.',
+    description: 'Espacios de trabajo dedicados y cambio fluido entre proyectos.',
   },
   {
-    icon: BarChart3,
-    title: 'Métricas de Productividad',
-    description: 'Análisis detallado de rendimiento, cumplimiento de objetivos, tiempo invertido y patrones de trabajo para optimización continua.',
+    icon: Sparkles,
+    title: 'Generador de IA',
+    description: 'Extracción y estructuración de contenido mediante asistencia de inteligencia artificial.',
   },
 ];
 
 const benefits = [
-  { icon: Calendar, title: 'Agenda Inteligente', desc: 'La IA reorganiza tu día automáticamente ante imprevistos' },
-  { icon: Target, title: 'Priorización Automática', desc: 'Framework Eisenhower + ML para enfocarte en lo importante' },
-  { icon: TrendingUp, title: 'Insights Semanales', desc: 'Reportes de productividad y sugerencias de mejora' },
-  { icon: CheckCircle2, title: 'Cero Olvidos', desc: 'Recordatorios contextuales y seguimiento de dependencias' },
+  { icon: Flag, title: 'Prioridades y Fechas', desc: 'Organiza tus tareas por prioridad (alta, media, baja) y fecha de entrega' },
+  { icon: Mail, title: 'Invitaciones por Correo', desc: 'Invita a tu equipo a tu workspace con roles de administrador o miembro' },
+  { icon: Zap, title: 'Smart Paste con IA', desc: 'Pega un texto o documento y la IA extrae las tareas automáticamente' },
+  { icon: CheckCircle2, title: 'Seguimiento de Estados', desc: 'Pendiente, en progreso y completada, con progreso visible en el dashboard' },
 ];
 
 const mockTasks = [
@@ -65,10 +59,15 @@ const mockTasks = [
   { id: 6, title: 'Documentar endpoints REST', status: 'completed', progress: 100, assignee: 'Jorge K.' },
 ];
 
+const mockWorkspaces = [
+  { name: 'Personal', tasks: 6, active: true },
+  { name: 'PlanAI — Lanzamiento', tasks: 4, active: false },
+];
+
 const statusConfig = {
-  completed: { color: 'emerald', label: 'Completado', icon: Check },
-  'in-progress': { color: 'violet', label: 'En progreso', icon: Clock },
-  pending: { color: 'amber', label: 'Pendiente', icon: Circle },
+  completed: { label: 'Completado' },
+  'in-progress': { label: 'En progreso' },
+  pending: { label: 'Pendiente' },
 };
 
 export default function LandingPage() {
@@ -127,7 +126,7 @@ export default function LandingPage() {
                 {/* Badge "Nuevo" with glassmorphism */}
                 <div className="inline-flex items-center gap-2 bg-violet-500/10 border border-violet-500/30 text-violet-300 rounded-full px-4 py-1.5 text-xs backdrop-blur-md mb-8 animate-fade-in">
                   <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" aria-hidden="true"></span>
-                  <span>Nuevo: Asistente IA para planificación de proyectos</span>
+                  <span>Nuevo: Generador de IA integrado para tus tareas</span>
                 </div>
 
                 {/* Title with gradient text */}
@@ -137,7 +136,7 @@ export default function LandingPage() {
 
                 {/* Subtitle */}
                 <p className="text-lg sm:text-xl text-slate-300 max-w-3xl mx-auto mb-10 animate-slide-up delay-100 [text-shadow:0_1px_12px_rgba(2,6,23,0.85),0_0_24px_rgba(2,6,23,0.6)]">
-                  PlanAI optimiza tus flujos de trabajo, prioriza tus tareas automáticamente y maximiza tu productividad diaria mediante inteligencia artificial.
+                  PlanAI te ayuda a organizar y completar tus tareas: prioridades, fechas de entrega, contenido generado con IA y colaboración en workspaces compartidos.
                 </p>
 
                 {/* CTA Button */}
@@ -154,20 +153,20 @@ export default function LandingPage() {
                 {/* Trust indicators */}
                 <div className="mt-12 flex flex-wrap items-center justify-center gap-8 text-slate-400 text-sm animate-fade-in delay-300">
                   <span className="flex items-center gap-1">
-                    <Lock className="w-4 h-4" aria-hidden="true" />
-                    Cifrado AES-256
+                    <Sparkles className="w-4 h-4" aria-hidden="true" />
+                    IA integrada en tu flujo
                   </span>
                   <span className="flex items-center gap-1">
-                    <Shield className="w-4 h-4" aria-hidden="true" />
-                    SOC 2 Type II
+                    <Users className="w-4 h-4" aria-hidden="true" />
+                    Colaboración en equipo
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <FileText className="w-4 h-4" aria-hidden="true" />
+                    Exportación a PDF y Word
                   </span>
                   <span className="flex items-center gap-1">
                     <Globe className="w-4 h-4" aria-hidden="true" />
-                    GDPR Compliant
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Zap className="w-4 h-4" aria-hidden="true" />
-                    99.9% SLA
+                    Disponible en español e inglés
                   </span>
                 </div>
               </div>
@@ -184,24 +183,24 @@ export default function LandingPage() {
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-2">
                       <div className="w-8 h-8 rounded-full bg-violet-500/20 border border-violet-500/30 flex items-center justify-center">
-                        <Zap className="w-4 h-4 text-violet-400" aria-hidden="true" />
+                        <ListChecks className="w-4 h-4 text-violet-400" aria-hidden="true" />
                       </div>
                       <div className="w-8 h-8 rounded-full bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center">
-                        <Target className="w-4 h-4 text-indigo-400" aria-hidden="true" />
+                        <Users className="w-4 h-4 text-indigo-400" aria-hidden="true" />
                       </div>
                       <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center">
-                        <TrendingUp className="w-4 h-4 text-cyan-400" aria-hidden="true" />
+                        <Sparkles className="w-4 h-4 text-cyan-400" aria-hidden="true" />
                       </div>
                     </div>
                     <div>
                       <p className="text-xs text-slate-500">Dashboard PlanAI</p>
-                      <p className="font-medium text-slate-100">Tareas completadas esta semana: 247</p>
+                      <p className="font-medium text-slate-100">2 de 6 tareas completadas</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 text-slate-400 text-sm">
-                    <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" aria-hidden="true"></span>
-                      IA activa
+                    <span className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-violet-400 animate-pulse" aria-hidden="true"></span>
+                      Vista previa
                     </span>
                   </div>
                 </div>
@@ -212,12 +211,11 @@ export default function LandingPage() {
                   <div className="lg:col-span-2 space-y-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="text-sm font-medium text-slate-300">Tareas recientes</h4>
-                      <span className="text-xs text-slate-500">6 tareas · 4 completadas</span>
+                      <span className="text-xs text-slate-500">6 tareas · 2 completadas</span>
                     </div>
                     <div className="space-y-3">
                       {mockTasks.map((task) => {
                         const config = statusConfig[task.status as keyof typeof statusConfig];
-                        const Icon = config.icon;
                         return (
                           <div
                             key={task.id}
@@ -268,34 +266,67 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Right column: Stats cards */}
+                  {/* Right column: Resumen limpio del flujo real */}
                   <div className="space-y-4">
+                    {/* Estados de las tareas */}
                     <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
                       <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs text-slate-500">Productividad semanal</span>
-                        <span className="text-2xl font-bold text-emerald-400">+42%</span>
+                        <span className="text-xs text-slate-500">Resumen de tareas</span>
+                        <span className="text-[10px] uppercase tracking-wider text-violet-400 font-semibold">Vista previa</span>
                       </div>
-                      <div className="h-20 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-lg relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/20 via-transparent to-teal-500/20 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="rounded-lg bg-emerald-500/5 border border-emerald-500/20 py-3">
+                          <p className="text-2xl font-bold text-emerald-400">2</p>
+                          <p className="text-[10px] font-medium text-emerald-300/80 uppercase tracking-wide mt-1">Completadas</p>
+                        </div>
+                        <div className="rounded-lg bg-violet-500/5 border border-violet-500/20 py-3">
+                          <p className="text-2xl font-bold text-violet-400">2</p>
+                          <p className="text-[10px] font-medium text-violet-300/80 uppercase tracking-wide mt-1">En progreso</p>
+                        </div>
+                        <div className="rounded-lg bg-amber-500/5 border border-amber-500/20 py-3">
+                          <p className="text-2xl font-bold text-amber-400">2</p>
+                          <p className="text-[10px] font-medium text-amber-300/80 uppercase tracking-wide mt-1">Pendientes</p>
+                        </div>
                       </div>
                     </div>
+
+                    {/* Progreso general del espacio */}
                     <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs text-slate-500">Tareas a tiempo</span>
-                        <span className="text-2xl font-bold text-cyan-400">95%</span>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs text-slate-500">Progreso general</span>
+                        <span className="text-xs font-semibold text-slate-300">2 de 6 tareas</span>
                       </div>
-                      <div className="h-20 bg-gradient-to-r from-cyan-500/10 to-indigo-500/10 rounded-lg relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 via-transparent to-indigo-500/20 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                      <div className="h-2.5 bg-slate-700/80 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-violet-500 to-indigo-500 rounded-full" style={{ width: '33%' }} />
                       </div>
+                      <p className="text-[11px] text-slate-500 mt-2">Progreso del workspace · 33% completado</p>
                     </div>
+
+                    {/* Espacios de trabajo */}
                     <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-5">
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-xs text-slate-500">Tiempo ahorrado</span>
-                        <span className="text-2xl font-bold text-violet-400">12 hrs/sem</span>
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs text-slate-500">Espacios de trabajo</span>
+                        <span className="text-[10px] text-slate-500">{mockWorkspaces.length} workspaces</span>
                       </div>
-                      <div className="h-20 bg-gradient-to-r from-violet-500/10 to-purple-500/10 rounded-lg relative overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-r from-violet-500/20 via-transparent to-purple-500/20 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
-                      </div>
+                      <ul className="space-y-2">
+                        {mockWorkspaces.map((ws) => (
+                          <li
+                            key={ws.name}
+                            className="flex items-center justify-between gap-2 rounded-lg bg-slate-900/50 border border-slate-700/50 px-3 py-2"
+                          >
+                            <div className="flex items-center gap-2 min-w-0">
+                              <Layers className="w-4 h-4 text-violet-400 flex-shrink-0" aria-hidden="true" />
+                              <span className="text-xs font-medium text-slate-200 truncate">{ws.name}</span>
+                            </div>
+                            <span className="flex items-center gap-1.5 text-[10px] text-slate-500 whitespace-nowrap">
+                              {ws.tasks} tareas
+                              {ws.active && (
+                                <span className="px-1.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/30 text-violet-300 text-[9px] font-semibold uppercase tracking-wide">activo</span>
+                              )}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
                     </div>
                   </div>
                 </div>
@@ -312,10 +343,10 @@ export default function LandingPage() {
               </span>
               <h2 className="text-3xl sm:text-4xl font-heading font-bold tracking-tight mb-4">
                 Todo lo que necesitas para{' '}
-                <span className="bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">gestionar proyectos con IA</span>
+                <span className="bg-gradient-to-r from-white via-slate-200 to-violet-400 bg-clip-text text-transparent">gestionar tus tareas con IA</span>
               </h2>
               <p className="text-lg text-slate-400">
-                Plataforma unificada que combina planificación automática, colaboración en tiempo real y analítica de productividad.
+                Plataforma unificada para crear, organizar y completar tareas, colaborar con tu equipo y potenciar tu productividad con IA.
               </p>
             </div>
 
@@ -366,9 +397,9 @@ export default function LandingPage() {
                 © {new Date().getFullYear()} PlanAI. Todos los derechos reservados.
               </p>
               <div className="flex items-center gap-6">
-                <a href="#" className="text-slate-400 hover:text-violet-400 transition-colors text-sm">Privacidad</a>
-                <a href="#" className="text-slate-400 hover:text-violet-400 transition-colors text-sm">Términos</a>
-                <a href="#" className="text-slate-400 hover:text-violet-400 transition-colors text-sm">Contacto</a>
+                <Link href="/privacidad" className="text-slate-400 hover:text-violet-400 transition-colors text-sm">Privacidad</Link>
+                <Link href="/terminos" className="text-slate-400 hover:text-violet-400 transition-colors text-sm">Términos</Link>
+                <Link href="/contacto" className="text-slate-400 hover:text-violet-400 transition-colors text-sm">Contacto</Link>
               </div>
             </div>
           </div>

@@ -240,7 +240,7 @@ export default function TaskCard({
 
   return (
     <article
-      className={`group bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300/80 dark:hover:border-slate-700/80 rounded-2xl p-4 sm:p-5 transition-all transition-colors duration-200 ${
+      className={`group bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800/80 hover:border-slate-300/80 dark:hover:border-slate-700/80 rounded-2xl p-3.5 sm:p-4 transition-all transition-colors duration-200 ${
         tarea.completado ? 'opacity-60' : ''
       }`}
       role="listitem"
@@ -279,35 +279,37 @@ export default function TaskCard({
           )}
         </button>
 
-        {isEditing ? (
-          <div className="flex-1 min-w-0">
-            <input
-              type="text"
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              onKeyDown={(e) => e.stopPropagation()}
-              maxLength={100}
-              className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:border-purple-500 rounded-lg px-3 py-1.5 text-slate-900 dark:text-slate-100 text-sm font-semibold outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
-              placeholder={t('dashboard.taskTitle')}
-              autoFocus
-              aria-label={t('dashboard.taskTitle')}
-            />
-          </div>
-        ) : (
-          <span
-            className={`flex-1 truncate font-semibold text-slate-900 dark:text-slate-100 text-base leading-snug transition-colors ${
-              tarea.completado ? 'text-slate-500 dark:text-slate-400 line-through' : ''
-            }`}
-          >
-            {tarea.titulo}
+        <div className="min-w-0 flex-1 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2">
+          {isEditing ? (
+            <div className="min-w-0 flex-1">
+              <input
+                type="text"
+                value={editedTitle}
+                onChange={(e) => setEditedTitle(e.target.value)}
+                onKeyDown={(e) => e.stopPropagation()}
+                maxLength={100}
+                className="w-full bg-white dark:bg-slate-900 border border-slate-300 dark:border-slate-700 focus:border-purple-500 rounded-lg px-3 py-1.5 text-slate-900 dark:text-slate-100 text-sm font-semibold outline-none placeholder:text-slate-400 dark:placeholder:text-slate-500"
+                placeholder={t('dashboard.taskTitle')}
+                autoFocus
+                aria-label={t('dashboard.taskTitle')}
+              />
+            </div>
+          ) : (
+            <span
+              className={`truncate font-semibold text-slate-900 dark:text-slate-100 text-base leading-snug transition-colors ${
+                tarea.completado ? 'text-slate-500 dark:text-slate-400 line-through' : ''
+              }`}
+            >
+              {tarea.titulo}
+            </span>
+          )}
+
+          <span className={getPriorityClass(tarea.prioridad)}>
+            {getPriorityText(tarea.prioridad, language)}
           </span>
-        )}
+        </div>
 
-        <span className={getPriorityClass(tarea.prioridad)}>
-          {getPriorityText(tarea.prioridad, language)}
-        </span>
-
-        <div className="flex items-center gap-1 flex-shrink-0">
+        <div className="flex items-center gap-1 flex-shrink-0 self-start sm:self-center">
           <button
             onClick={(e) => {
               e.stopPropagation();
@@ -458,7 +460,7 @@ export default function TaskCard({
       </div>
 
       {/* Footer: due date badge + creation time */}
-      <div className="text-xs text-slate-500 dark:text-slate-400 mt-3 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/50 flex items-center gap-4">
+      <div className="text-xs text-slate-500 dark:text-slate-400 mt-3 pt-2.5 border-t border-slate-200/50 dark:border-slate-800/50 flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-4">
         {tarea.fecha_entrega && (
           <span
             className="inline-flex items-center gap-1.5 rounded-full bg-slate-100/80 dark:bg-slate-800/50 px-2.5 py-0.5"
